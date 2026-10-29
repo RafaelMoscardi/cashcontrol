@@ -37,9 +37,13 @@ O e-mail e a senha da conta de demonstração estão em [scripts/local-supabase/
 
 ## 2. Supabase (banco e login de verdade)
 
-1. Crie uma conta em [supabase.com](https://supabase.com) e um projeto novo. Região: **South America (São Paulo)**. Guarde a senha do banco.
-2. **Crie as tabelas.** No painel do projeto, abra **SQL Editor → New query**, cole todo o conteúdo de [`supabase/migrations/20261025120000_initial_schema.sql`](../supabase/migrations/20261025120000_initial_schema.sql) e clique em **Run**. Deve terminar sem erro.
-   - Alternativa pela linha de comando: `npx supabase login`, `npx supabase link --project-ref SEU_REF` e `npx supabase db push`.
+1. Crie uma conta em [supabase.com](https://supabase.com), uma organização no plano **Free** e um projeto novo:
+   - **Region:** clique em *Need a specific region?* e escolha **South America (São Paulo)**;
+   - **Database password:** gere e guarde só com você (o app não usa);
+   - **Security:** *Enable Data API* ligado; *Automatically expose new tables* **desligado** (as permissões estão na migration); *Enable automatic RLS* pode ficar ligado;
+   - **Postgres Type:** Postgres (padrão).
+2. **Crie as tabelas pelo GitHub.** Depois do passo 3 (código no GitHub), em **Project Settings → Integrations → GitHub**: escolha o repositório, *Working directory* `.`, ligue **Deploy to production** com a branch `main`. A cada envio para a `main`, o Supabase aplica as migrations novas de `supabase/migrations` (regras em [supabase/README.md](../supabase/README.md)).
+   - Sem a integração: abra **SQL Editor → New query**, cole [`supabase/migrations/20261025120000_initial_schema.sql`](../supabase/migrations/20261025120000_initial_schema.sql) e clique em **Run**. Não misture os dois caminhos: migration rodada à mão é rodada de novo pela integração.
 3. **Endereços do app.** Em **Authentication → URL Configuration**:
    - *Site URL*: o endereço publicado (ex.: `https://cashcontrol.pages.dev`). Antes de publicar, use `http://localhost:5180`.
    - *Redirect URLs*: adicione `http://localhost:5180/**` e, depois de publicar, `https://SEU-PROJETO.pages.dev/**`.
