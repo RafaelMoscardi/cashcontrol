@@ -4,6 +4,8 @@ Planejamento e controle financeiro para motoristas de aplicativo e entregadores 
 
 PWA instalável, mobile primeiro, escuro (preto, grafite e roxo).
 
+**No ar:** https://cashcontrol-app.pages.dev (Cloudflare Pages + Supabase, planos gratuitos; cada envio para a `main` publica sozinho).
+
 <p>
   <img src="docs/img/painel-celular.png" alt="Painel no celular: lucro real da semana, indicadores e resultado operacional" width="260">
   <img src="docs/img/jornada-celular.png" alt="Registro de jornada no celular com cálculo ao vivo" width="260">
