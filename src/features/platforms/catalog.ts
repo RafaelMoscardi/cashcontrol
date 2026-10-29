@@ -12,7 +12,7 @@ export const PLATFORM_KIND_LABEL: Record<PlatformKind, string> = {
 /** Sugestões do primeiro acesso. O usuário pode criar qualquer outra. */
 export const PLATFORM_CATALOG: ReadonlyArray<{ name: string; kind: PlatformKind }> = [
   { name: 'Uber', kind: 'rides' },
-  { name: '99', kind: 'rides' },
+  { name: '99Pop', kind: 'rides' },
   { name: 'inDrive', kind: 'rides' },
   { name: 'Táxi', kind: 'taxi' },
   { name: '99Táxi', kind: 'taxi' },
