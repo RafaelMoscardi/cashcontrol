@@ -1,0 +1,38 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependências e build
+node_modules
+dist
+dist-ssr
+dev-dist
+coverage
+
+# Variáveis de ambiente (nunca versionar)
+.env
+.env.*
+!.env.example
+*.local
+
+# Supabase local (PGlite) e CLI
+.local-supabase
+supabase/.temp
+supabase/.branches
+
+# Cloudflare
+.wrangler
+
+# Editor e sistema
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.sw?
+
+# Testes de navegador
+.playwright-mcp
+test-results
+playwright-report

@@ -1,0 +1,207 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+/* O app é sempre escuro: <html class="dark">. */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  /* Tokens do produto */
+  --color-surface-2: var(--surface-2);
+  --color-primary-strong: var(--primary-strong);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-faint: var(--faint);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@theme {
+  /* Curvas fortes (ease-out para entradas, drawer estilo iOS) */
+  --ease-snappy: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* Preto, grafite e roxo ---------------------------------------------- */
+:root,
+.dark {
+  color-scheme: dark;
+
+  --background: #0b0a10;
+  --foreground: #f4f3f8;
+  --card: #14131b;
+  --card-foreground: #f4f3f8;
+  --surface-2: #1a1923;
+  --popover: #18171f;
+  --popover-foreground: #f4f3f8;
+
+  --primary: #8b5cf6;
+  --primary-strong: #7c3aed;
+  --primary-foreground: #ffffff;
+
+  --secondary: #1d1c27;
+  --secondary-foreground: #ebe9f3;
+  --muted: #1d1c27;
+  --muted-foreground: #a09db0;
+  --faint: #6f6c80;
+  --accent: #24212f;
+  --accent-foreground: #f4f3f8;
+
+  --positive: #34d399;
+  --negative: #f87171;
+  --warning: #fbbf24;
+  --destructive: #f87171;
+
+  --border: rgb(255 255 255 / 0.08);
+  --input: rgb(255 255 255 / 0.1);
+  --ring: #8b5cf6;
+
+  /* Séries categóricas, nesta ordem (validadas para daltonismo sobre #14131b) */
+  --chart-1: #8b5cf6;
+  --chart-2: #199e70;
+  --chart-3: #d95926;
+  --chart-4: #3987e5;
+  --chart-5: #d55181;
+  --chart-6: #c98500;
+  --chart-grid: #26242f;
+  --chart-axis: #3a3846;
+
+  --radius: 0.75rem;
+
+  --sidebar: #0f0e15;
+  --sidebar-foreground: #f4f3f8;
+  --sidebar-primary: #8b5cf6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1d1c27;
+  --sidebar-accent-foreground: #f4f3f8;
+  --sidebar-border: rgb(255 255 255 / 0.06);
+  --sidebar-ring: #8b5cf6;
+
+  /* Alturas usadas pelo layout */
+  --bottom-nav-h: 4.25rem;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    background: var(--background);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overscroll-behavior: none;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    min-height: 100dvh;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  /* Toque: sem atraso, sem selecionar texto de controles */
+  a,
+  button,
+  [role="button"],
+  [role="tab"],
+  label {
+    touch-action: manipulation;
+  }
+  button,
+  [role="button"],
+  [role="tab"],
+  [data-slot="toggle-group-item"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* iOS não dá zoom em campos de 16 px */
+  @media (pointer: coarse) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+  /* Setas de número nunca aparecem: usamos inputmode */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  /* Ícone nativo de data/hora claro no tema escuro */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.75);
+    cursor: pointer;
+  }
+  ::selection {
+    background: rgb(139 92 246 / 0.35);
+  }
+}
+
+@layer components {
+  /* Brilho roxo discreto atrás do topo das telas */
+  .app-glow {
+    background:
+      radial-gradient(60rem 28rem at 50% -12rem, rgb(124 58 237 / 0.16), transparent 70%),
+      var(--background);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

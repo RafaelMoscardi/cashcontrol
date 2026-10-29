@@ -1,0 +1,4 @@
+# Finais de linha LF no repositório e na pasta de trabalho (build da Cloudflare roda em Linux)
+* text=auto eol=lf
+*.png binary
+*.woff2 binary
