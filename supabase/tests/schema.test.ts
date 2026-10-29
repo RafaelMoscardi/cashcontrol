@@ -172,6 +172,14 @@ describe('veículos', () => {
     ).rejects.toMatchObject({ code: '23514' })
   })
 
+  it('guarda marca e modelo; marca vazia ou longa demais é recusada', async () => {
+    const id = await as(alice, (tx) => insertVehicle(tx, { brand: 'Chevrolet', model: 'Onix Plus' }))
+    const { rows } = await db.query<{ brand: string; model: string }>('select brand, model from public.vehicles where id = $1', [id])
+    expect(rows[0]).toEqual({ brand: 'Chevrolet', model: 'Onix Plus' })
+    await expect(as(alice, (tx) => insertVehicle(tx, { brand: '   ' }))).rejects.toMatchObject({ code: '23514' })
+    await expect(as(alice, (tx) => insertVehicle(tx, { brand: 'x'.repeat(41) }))).rejects.toMatchObject({ code: '23514' })
+  })
+
   it('moto só pode ser a combustão ou elétrica', async () => {
     await expect(as(alice, (tx) => insertVehicle(tx, { kind: 'motorcycle', powertrain: 'hybrid' }))).rejects.toMatchObject({
       code: '23514',

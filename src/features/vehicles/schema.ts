@@ -32,6 +32,7 @@ export const vehicleFormSchema = z
     otherFixedCents: money,
     financingCents: money,
     fixedCostsStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
+    brand: z.string().trim().max(40, 'Use até 40 caracteres'),
     model: z.string().trim().max(60, 'Use até 60 caracteres'),
     plate: z.string().trim().max(10, 'Placa muito longa'),
   })
@@ -77,6 +78,7 @@ export function emptyVehicleForm(): VehicleFormValues {
     otherFixedCents: 0,
     financingCents: 0,
     fixedCostsStart: startOfMonth(todayISO()),
+    brand: '',
     model: '',
     plate: '',
   }
@@ -106,6 +108,7 @@ export function vehicleToForm(v: Vehicle): VehicleFormValues {
     otherFixedCents: cents(v.otherFixedMonthly),
     financingCents: cents(v.financingMonthly),
     fixedCostsStart: v.fixedCostsStart,
+    brand: v.brand ?? '',
     model: v.model ?? '',
     plate: v.plate ?? '',
   }
@@ -139,6 +142,7 @@ export function formToVehicleRow(v: VehicleFormValues): Omit<VehicleInsert, 'arc
     other_fixed_monthly: v.otherFixedCents / 100,
     financing_monthly: v.ownership === 'financed' ? v.financingCents / 100 : 0,
     fixed_costs_start: v.fixedCostsStart,
+    brand: v.brand.trim() || null,
     model: v.model.trim() || null,
     plate: v.plate.trim().toUpperCase() || null,
   }

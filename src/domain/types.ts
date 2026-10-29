@@ -60,6 +60,7 @@ export interface Vehicle extends EnergyConfig, PerKmReserves, VehicleFixedCosts 
   id: string
   name: string
   kind: VehicleKind
+  brand: string | null
   model: string | null
   plate: string | null
   archivedAt: string | null

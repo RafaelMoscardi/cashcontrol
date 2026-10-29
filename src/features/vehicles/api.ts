@@ -33,6 +33,7 @@ export function toVehicle(row: VehicleRow): Vehicle {
     financingMonthly: Number(row.financing_monthly),
     fixedCostsStart: row.fixed_costs_start,
     fixedCostsEnd: row.archived_at ? toISODate(new Date(row.archived_at)) : null,
+    brand: row.brand,
     model: row.model,
     plate: row.plate,
     archivedAt: row.archived_at,

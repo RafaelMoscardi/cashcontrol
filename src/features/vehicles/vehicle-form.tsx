@@ -1,11 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { BatteryCharging, Bike, Car, CarFront, Fuel, Gauge, Leaf, PlugZap, Wallet, Wrench } from 'lucide-react'
+import { BatteryCharging, Bike, Car, CarFront, Fuel, Gauge, Leaf, List, PencilLine, PlugZap, Wallet, Wrench } from 'lucide-react'
+import { useRef, useState } from 'react'
 import type * as React from 'react'
 import { Controller, useForm, useWatch, type Control } from 'react-hook-form'
 import { ChoiceCards, type Choice } from '@/components/app/choice-cards'
 import { DecimalInput, IntegerInput } from '@/components/app/decimal-input'
 import { FormField } from '@/components/app/form-field'
 import { MoneyInput } from '@/components/app/money-input'
+import { SearchableSelect } from '@/components/app/searchable-select'
 import { SectionCard } from '@/components/app/section-card'
 import { SegmentedControl } from '@/components/app/segmented-control'
 import { Button } from '@/components/ui/button'
@@ -17,6 +19,7 @@ import { monthlyFixedCost } from '@/domain/fixed-costs'
 import type { FuelType, Ownership, Powertrain, VehicleKind } from '@/domain/types'
 import { formatReais } from '@/lib/format'
 import { reportInvalid } from '@/lib/form-errors'
+import { brandGroups, isCatalogBrand, isCatalogModel, modelsOf } from './catalog'
 import { FUEL_LABEL, OWNERSHIP_LABEL, POWERTRAIN_DESCRIPTION, POWERTRAIN_LABEL } from './labels'
 import { vehicleFormSchema, type VehicleFormValues } from './schema'
 
@@ -49,6 +52,16 @@ const OWNERSHIP_CHOICES: Choice<Ownership>[] = (['owned', 'financed', 'rented', 
 
 const fuelsFor = (kind: VehicleKind): FuelType[] => (kind === 'motorcycle' ? ['gasoline', 'ethanol'] : ['gasoline', 'ethanol', 'diesel', 'cng'])
 
+/** Volta do campo digitado para a lista da FIPE */
+function BackToList({ onClick }: { onClick: () => void }) {
+  return (
+    <Button type="button" variant="link" size="sm" className="touch-target h-auto self-start px-0" onClick={onClick}>
+      <List data-icon="inline-start" />
+      Escolher da lista
+    </Button>
+  )
+}
+
 interface VehicleFormProps {
   defaultValues: VehicleFormValues
   onSubmit: (values: VehicleFormValues) => Promise<void>
@@ -58,15 +71,60 @@ interface VehicleFormProps {
 }
 
 export function VehicleForm({ defaultValues, onSubmit, submitLabel, secondaryActions }: VehicleFormProps) {
-  const { control, register, handleSubmit, setValue, getValues, formState } = useForm<VehicleFormValues>({
+  const { control, register, handleSubmit, setValue, getValues, setFocus, formState } = useForm<VehicleFormValues>({
     resolver: zodResolver(vehicleFormSchema),
     defaultValues,
     mode: 'onTouched',
   })
   const errors = formState.errors
   const values = useWatch({ control }) as VehicleFormValues
-  const { kind, powertrain, fuelType, ownership } = values
+  const { kind, powertrain, fuelType, ownership, brand, model } = values
   const unit = fuelUnit(fuelType)
+
+  // Marca ou modelo fora da lista da FIPE (ou de cadastros antigos) aparecem como texto digitado
+  const [customBrand, setCustomBrand] = useState(() => !!defaultValues.brand && !isCatalogBrand(defaultValues.kind, defaultValues.brand))
+  const [customModel, setCustomModel] = useState(
+    () => !!defaultValues.model && !isCatalogModel(defaultValues.kind, defaultValues.brand, defaultValues.model),
+  )
+  // O nome acompanha o modelo até a pessoa escrever outro nome
+  const autoName = useRef(defaultValues.name && defaultValues.name === defaultValues.model ? defaultValues.name : '')
+
+  const set = (field: 'brand' | 'model' | 'name', value: string) =>
+    setValue(field, value, { shouldDirty: true, shouldValidate: formState.isSubmitted })
+
+  const fillName = (next: string) => {
+    const name = getValues('name')
+    if (!name.trim() || name === autoName.current) {
+      set('name', next)
+      autoName.current = next
+    }
+  }
+
+  const chooseBrand = (next: string) => {
+    if (next === getValues('brand')) return
+    set('brand', next)
+    if (!isCatalogModel(getValues('kind'), next, getValues('model'))) set('model', '')
+    setCustomModel(false)
+  }
+
+  const chooseModel = (next: string) => {
+    set('model', next)
+    fillName(next)
+  }
+
+  const typeBrand = () => {
+    setCustomBrand(true)
+    setCustomModel(true)
+    set('brand', '')
+    set('model', '')
+    requestAnimationFrame(() => setFocus('brand'))
+  }
+
+  const typeModel = () => {
+    setCustomModel(true)
+    set('model', '')
+    requestAnimationFrame(() => setFocus('model'))
+  }
 
   let energyPerKm: number | null = null
   try {
@@ -93,6 +151,17 @@ export function VehicleForm({ defaultValues, onSubmit, submitLabel, secondaryAct
 
   const changeKind = (next: VehicleKind) => {
     setValue('kind', next, { shouldDirty: true })
+    // Marca da lista que não existe no outro tipo (ex.: Jeep em moto) sai junto com o modelo
+    const current = getValues('brand')
+    if (current && !customBrand && !isCatalogBrand(next, current)) {
+      set('brand', '')
+      set('model', '')
+      setCustomModel(false)
+      if (getValues('name') === autoName.current) {
+        set('name', '')
+        autoName.current = ''
+      }
+    }
     if (next === 'motorcycle') {
       const current = getValues('powertrain')
       if (current === 'hybrid' || current === 'plugin_hybrid') setValue('powertrain', 'combustion', { shouldDirty: true })
@@ -104,15 +173,85 @@ export function VehicleForm({ defaultValues, onSubmit, submitLabel, secondaryAct
     <form onSubmit={handleSubmit(onSubmit, reportInvalid)} noValidate className="flex flex-col gap-4">
       <SectionCard title="Veículo" icon={CarFront}>
         <div className="flex flex-col gap-4">
-          <FormField label="Nome" htmlFor="name" description="Como você chama o veículo no dia a dia." error={errors.name?.message}>
-            <Input id="name" placeholder="Ex.: Onix prata" autoComplete="off" aria-invalid={!!errors.name} {...register('name')} />
-          </FormField>
           <FormField label="Tipo">
             <ChoiceCards aria-label="Tipo de veículo" value={kind} onValueChange={changeKind} choices={KIND_CHOICES} />
           </FormField>
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Modelo (opcional)" htmlFor="model" error={errors.model?.message}>
-              <Input id="model" placeholder="Ex.: Chevrolet Onix 1.0" autoComplete="off" {...register('model')} />
+            <FormField label="Marca" htmlFor="brand" error={errors.brand?.message}>
+              {customBrand ? (
+                <>
+                  <Input id="brand" placeholder="Digite a marca" autoComplete="off" aria-invalid={!!errors.brand} {...register('brand')} />
+                  <BackToList
+                    onClick={() => {
+                      setCustomBrand(false)
+                      setCustomModel(false)
+                      set('brand', '')
+                      set('model', '')
+                    }}
+                  />
+                </>
+              ) : (
+                <SearchableSelect
+                  id="brand"
+                  value={brand}
+                  onValueChange={chooseBrand}
+                  groups={brandGroups(kind)}
+                  title="Marca"
+                  placeholder="Escolha a marca"
+                  searchPlaceholder="Buscar marca"
+                  invalid={!!errors.brand}
+                  extraAction={{ label: 'Não achei a marca', icon: PencilLine, onSelect: typeBrand }}
+                />
+              )}
+            </FormField>
+            <FormField label="Modelo" htmlFor="model" error={errors.model?.message}>
+              {customBrand || customModel ? (
+                <>
+                  <Controller
+                    control={control}
+                    name="model"
+                    render={({ field }) => (
+                      <Input
+                        id="model"
+                        placeholder="Digite o modelo"
+                        autoComplete="off"
+                        aria-invalid={!!errors.model}
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e)
+                          fillName(e.target.value)
+                        }}
+                      />
+                    )}
+                  />
+                  {!customBrand && (
+                    <BackToList
+                      onClick={() => {
+                        setCustomModel(false)
+                        set('model', '')
+                      }}
+                    />
+                  )}
+                </>
+              ) : (
+                <SearchableSelect
+                  id="model"
+                  value={model}
+                  onValueChange={chooseModel}
+                  groups={[{ items: brand ? (modelsOf(kind, brand) ?? []) : [] }]}
+                  title={brand ? `Modelos ${brand}` : 'Modelo'}
+                  placeholder={brand ? 'Escolha o modelo' : 'Escolha a marca primeiro'}
+                  searchPlaceholder="Buscar modelo"
+                  disabled={!brand}
+                  invalid={!!errors.model}
+                  extraAction={{ label: 'Não achei meu modelo', icon: PencilLine, onSelect: typeModel }}
+                />
+              )}
+            </FormField>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField label="Nome" htmlFor="name" description="Como você chama o veículo no dia a dia." error={errors.name?.message}>
+              <Input id="name" placeholder="Ex.: Onix prata" autoComplete="off" aria-invalid={!!errors.name} {...register('name')} />
             </FormField>
             <FormField label="Placa (opcional)" htmlFor="plate" error={errors.plate?.message}>
               <Input id="plate" placeholder="ABC1D23" autoCapitalize="characters" autoComplete="off" className="uppercase" {...register('plate')} />

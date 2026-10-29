@@ -17,7 +17,7 @@ const EXAMPLE = {
     { name: '99', cents: 12140 },
   ],
   costs: [
-    { label: 'Combustível', detail: '210 km a R$ 0,52 por km', cents: 10920, color: 'var(--chart-3)' },
+    { label: 'Combustível', detail: '210\u00a0km a R$\u00a00,52 por\u00a0km', cents: 10920, color: 'var(--chart-3)' },
     { label: 'Reservas', detail: 'manutenção, pneus e depreciação', cents: 3780, color: 'var(--chart-4)' },
     { label: 'Despesas da jornada', detail: 'lavagem e estacionamento', cents: 1500, color: 'var(--chart-5)' },
     { label: 'Custos fixos do dia', detail: 'seguro e IPVA', cents: 1800, color: 'var(--chart-6)' },
@@ -69,10 +69,10 @@ function ShiftReceipt() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="font-semibold">Jornada de sábado</p>
-          {/*  : número e unidade nunca se separam na quebra de linha */}
+          {/* \u00a0: número e unidade nunca se separam na quebra de linha */}
           <p className="mt-0.5 text-sm text-muted-foreground text-pretty">
-            08:00 às 18:00, 1{' '}h de pausa, {EXAMPLE.km}
-            {' '}km
+            08:00 às 18:00, 1{'\u00a0'}h de pausa, {EXAMPLE.km}
+            {'\u00a0'}km
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-xs text-muted-foreground">Exemplo</span>
@@ -116,8 +116,8 @@ function ShiftReceipt() {
           ))}
         </div>
         <p className="mt-3 text-sm text-muted-foreground text-pretty">
-          De cada R${' '}100 recebidos, R${' '}{Math.round((profit / received) * 100)} ficaram com você. Deu{' '}
-          {formatReais(profit / 100 / EXAMPLE.hours)} por hora e {formatReais(profit / 100 / EXAMPLE.km)} por{' '}km.
+          De cada R${'\u00a0'}100 recebidos, R${'\u00a0'}{Math.round((profit / received) * 100)} ficaram com você. Deu{' '}
+          {formatReais(profit / 100 / EXAMPLE.hours)} por hora e {formatReais(profit / 100 / EXAMPLE.km)} por{'\u00a0'}km.
         </p>
       </div>
 

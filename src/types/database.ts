@@ -36,6 +36,7 @@ export type VehicleRow = Timestamps & {
   other_fixed_monthly: number
   financing_monthly: number
   fixed_costs_start: string
+  brand: string | null
   model: string | null
   plate: string | null
   archived_at: string | null
@@ -124,6 +125,7 @@ type VehicleDefaults =
   | 'other_fixed_monthly'
   | 'financing_monthly'
   | 'fixed_costs_start'
+  | 'brand'
   | 'model'
   | 'plate'
   | 'archived_at'

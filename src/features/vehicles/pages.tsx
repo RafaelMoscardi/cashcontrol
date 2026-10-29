@@ -49,7 +49,11 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           {vehicle.archivedAt && <Badge variant="outline">Arquivado</Badge>}
         </div>
         <p className="mt-0.5 truncate text-sm text-muted-foreground">
-          {[vehicle.model, vehicle.plate, usesFuel(vehicle.powertrain) || vehicle.powertrain === 'electric' ? energyLabel(vehicle) : null]
+          {[
+            [vehicle.brand, vehicle.model].filter(Boolean).join(' '),
+            vehicle.plate,
+            usesFuel(vehicle.powertrain) || vehicle.powertrain === 'electric' ? energyLabel(vehicle) : null,
+          ]
             .filter(Boolean)
             .join(' · ')}
         </p>

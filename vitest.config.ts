@@ -8,7 +8,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['src/**/*.test.ts', 'supabase/tests/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'scripts/**/*.test.ts', 'supabase/tests/**/*.test.ts'],
     environment: 'node',
     // Os testes de banco sobem um PostgreSQL embutido por arquivo
     testTimeout: 30_000,
