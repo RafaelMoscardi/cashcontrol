@@ -33,7 +33,12 @@ export function App() {
       <AuthProvider>
         <TooltipProvider delayDuration={300}>
           <RouterProvider router={router} />
-          <Toaster position="top-center" offset={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }} />
+          {/* offset vale só a partir de 600 px; no celular é o mobileOffset que tira o aviso de cima da barra de status */}
+          <Toaster
+            position="top-center"
+            offset={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
+            mobileOffset={{ top: 'calc(env(safe-area-inset-top, 0px) + 10px)' }}
+          />
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
