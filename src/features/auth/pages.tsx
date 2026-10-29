@@ -14,7 +14,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessage } from '@/lib/errors'
-import { authReturnError, dismissAuthReturnError, initialAuthLink, supabase } from '@/lib/supabase'
+import {
+  accountGoneNotice,
+  authReturnError,
+  dismissAccountGoneNotice,
+  dismissAuthReturnError,
+  initialAuthLink,
+  supabase,
+} from '@/lib/supabase'
 import { useAuth } from './auth-context'
 import { GoogleSignIn } from './google'
 import {
@@ -95,8 +102,16 @@ function authReturnMessage(code: string | null): string | null {
 export function LoginPage() {
   const location = useLocation()
   const next = new URLSearchParams(location.search).get('next')
-  const [error, setError] = useState<string | null>(() => authReturnMessage(authReturnError()))
-  useEffect(() => dismissAuthReturnError, [])
+  const [error, setError] = useState<string | null>(() =>
+    accountGoneNotice() ? 'Essa conta não existe mais. Crie uma conta nova ou entre com o Google.' : authReturnMessage(authReturnError()),
+  )
+  useEffect(
+    () => () => {
+      dismissAuthReturnError()
+      dismissAccountGoneNotice()
+    },
+    [],
+  )
   const { register, handleSubmit, formState } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },

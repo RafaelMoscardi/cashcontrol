@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { errorMessage } from './errors'
+import { errorMessage, isNotFound, unwrap } from './errors'
 import {
   capitalize,
   formatDate,
@@ -70,6 +70,19 @@ describe('leitura de números digitados', () => {
 })
 
 describe('mensagens de erro', () => {
+  it('reconhece consulta sem linha e leva o status HTTP junto no erro', () => {
+    expect(isNotFound({ code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned' })).toBe(true)
+    expect(isNotFound({ code: '23505' })).toBe(false)
+    expect(isNotFound(null)).toBe(false)
+    let thrown: unknown
+    try {
+      unwrap({ data: null, error: { code: 'PGRST116', message: '' }, status: 406 })
+    } catch (e) {
+      thrown = e
+    }
+    expect(thrown).toMatchObject({ code: 'PGRST116', status: 406 })
+  })
+
   it('traduz erros de autenticação e de restrições do banco', () => {
     expect(errorMessage({ code: 'invalid_credentials', message: 'Invalid login credentials' })).toBe('E-mail ou senha incorretos.')
     expect(

@@ -76,7 +76,11 @@ export function errorMessage(error: unknown, fallback = 'Algo deu errado. Tente 
 type SuccessData<R> = Extract<R, { error: null }> extends { data: infer D } ? D : never
 
 /** Lança o erro do Supabase (para o TanStack Query tratar) ou devolve os dados. */
-export function unwrap<R extends { data: unknown; error: unknown }>(result: R): SuccessData<R> {
-  if (result.error) throw result.error
+export function unwrap<R extends { data: unknown; error: unknown; status?: number }>(result: R): SuccessData<R> {
+  // O status HTTP vai junto no erro: o TanStack Query não repete erro 4xx (src/lib/query-client.ts)
+  if (result.error) throw result.status ? Object.assign(result.error as object, { status: result.status }) : result.error
   return result.data as SuccessData<R>
 }
+
+/** .single() sem linha nenhuma, ex.: perfil que sumiu do banco. */
+export const isNotFound = (error: unknown) => (error as MaybeError | null)?.code === 'PGRST116'

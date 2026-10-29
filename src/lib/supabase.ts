@@ -38,6 +38,19 @@ export function dismissAuthReturnError() {
   authLinkErrorDismissed = true
 }
 
+let accountGone = false
+
+/** A conta da sessão guardada foi apagada: o app sai dela e a tela de entrar explica por quê. */
+export function noteAccountGone() {
+  accountGone = true
+}
+
+export const accountGoneNotice = () => accountGone
+
+export function dismissAccountGoneNotice() {
+  accountGone = false
+}
+
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,

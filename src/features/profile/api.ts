@@ -1,3 +1,4 @@
+import { isAuthApiError } from '@supabase/supabase-js'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { unwrap } from '@/lib/errors'
 import { queryClient, queryKeys } from '@/lib/query-client'
@@ -34,7 +35,17 @@ async function updateProfile(patch: { fullName?: string; onboardedAt?: string })
 }
 
 export function useProfile(enabled = true) {
-  return useQuery({ queryKey: queryKeys.profile, queryFn: fetchProfile, enabled })
+  // Com erro, quem monta depois não busca de novo: senão o guarda volta ao carregamento e entra em laço
+  return useQuery({ queryKey: queryKeys.profile, queryFn: fetchProfile, enabled, retryOnMount: false })
+}
+
+/**
+ * A conta ainda existe? Apagada no painel do Supabase, o token guardado continua valendo por até 1 h
+ * e só o Auth sabe que ela sumiu. Sem internet, a resposta é sim: ninguém sai da conta por estar offline.
+ */
+export async function accountExists(): Promise<boolean> {
+  const { error } = await supabase.auth.getUser()
+  return !(isAuthApiError(error) && [401, 403, 404].includes(error.status))
 }
 
 export function useUpdateProfile() {
