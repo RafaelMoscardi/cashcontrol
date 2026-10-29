@@ -215,7 +215,64 @@ async function handleAuth(req: IncomingMessage, res: ServerResponse, url: URL, d
   const redirectTo = url.searchParams.get('redirect_to')
 
   if (req.method === 'GET' && path === '/settings') {
-    return send(res, 200, { external: { email: true }, disable_signup: false, mailer_autoconfirm: !CONFIRM_EMAIL })
+    return send(res, 200, { external: { email: true, google: true }, disable_signup: false, mailer_autoconfirm: !CONFIRM_EMAIL })
+  }
+
+  // Login com Google simulado: tela própria em vez do Google, mesmo retorno (tokens no hash)
+  if (req.method === 'GET' && path === '/authorize') {
+    if (url.searchParams.get('provider') !== 'google') {
+      throw authError(400, 'validation_failed', 'Unsupported provider: provider is not enabled')
+    }
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+    return res.end(fakeGooglePage(redirectTo ?? 'http://localhost:5180/'))
+  }
+
+  if (req.method === 'GET' && path === '/__fake-google') {
+    const target = redirectTo ?? 'http://localhost:5180/'
+    if (url.searchParams.get('cancel')) {
+      const hash = new URLSearchParams({ error: 'access_denied', error_code: 'access_denied', error_description: 'The user denied access' })
+      return send(res, 303, undefined, { Location: `${target}#${hash}` })
+    }
+    const email = (url.searchParams.get('email') ?? '').trim().toLowerCase()
+    const name = (url.searchParams.get('name') ?? '').trim() || email.split('@')[0] || 'Google'
+    if (!EMAIL_RE.test(email)) throw authError(400, 'validation_failed', 'Unable to validate email address: invalid format')
+    const session = await serialized(() =>
+      db.transaction(async (tx) => {
+        let user = await findUserByEmail(tx, email)
+        if (user) {
+          // Mesmo e-mail de uma conta com senha: o Supabase liga as identidades
+          const { rows } = await tx.query<UserRow>(
+            `update auth.users set last_sign_in_at = now(),
+               raw_app_meta_data = jsonb_set(raw_app_meta_data, '{providers}',
+                 (select to_jsonb(array(select distinct p from jsonb_array_elements_text(coalesce(raw_app_meta_data -> 'providers', '[]')) p union select 'google'))))
+             where id = $1 returning *`,
+            [user.id],
+          )
+          user = rows[0]!
+        } else {
+          const { rows } = await tx.query<UserRow>(
+            `insert into auth.users (email, email_confirmed_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data)
+             values ($1, now(), now(), $2::jsonb, $3::jsonb) returning *`,
+            [
+              email,
+              JSON.stringify({ provider: 'google', providers: ['google'] }),
+              JSON.stringify({ full_name: name, name, email, email_verified: true, iss: 'https://accounts.google.com' }),
+            ],
+          )
+          user = rows[0]!
+        }
+        return createSession(tx, user)
+      }),
+    )
+    const hash = new URLSearchParams({
+      access_token: String(session.access_token),
+      expires_at: String(session.expires_at),
+      expires_in: String(session.expires_in),
+      provider_token: 'local-fake-google-token',
+      refresh_token: String(session.refresh_token),
+      token_type: 'bearer',
+    })
+    return send(res, 303, undefined, { Location: `${target}#${hash}` })
   }
 
   if (req.method === 'POST' && path === '/signup') {
@@ -568,10 +625,23 @@ async function handleRest(req: IncomingMessage, res: ServerResponse, url: URL, d
   throw httpError(405, { code: 'PGRST117', message: `Método não suportado: ${req.method}`, details: null, hint: null })
 }
 
-/* ------------------------------------------------------------------- mailbox */
+/* ---------------------------------------------------- páginas de desenvolvimento */
+
+const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
+
+function fakeGooglePage(redirectTo: string): string {
+  return `<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Google (simulado)</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;background:#0b0a10;color:#f4f3f8;margin:0;display:grid;place-items:center;min-height:100vh}form{background:#14131b;border:1px solid #ffffff14;border-radius:20px;padding:28px;width:min(360px,90vw)}h1{font-size:20px;margin:0 0 4px}p{color:#a09db0;margin:0 0 18px;font-size:13px}label{display:block;font-size:13px;margin:12px 0 6px}input{width:100%;box-sizing:border-box;height:44px;border-radius:12px;border:1px solid #ffffff1f;background:#1d1c27;color:inherit;padding:0 12px;font-size:16px}.row{display:flex;gap:8px;margin-top:20px}button{flex:1;height:44px;border-radius:12px;border:0;font-size:15px;cursor:pointer}.ok{background:#8b5cf6;color:#fff}.no{background:#24212f;color:#f4f3f8}</style>
+<form action="/auth/v1/__fake-google" method="get">
+<h1>Google (simulado)</h1><p>Servidor local de desenvolvimento: nenhuma conta Google de verdade é usada.</p>
+<input type="hidden" name="redirect_to" value="${esc(redirectTo)}">
+<label for="name">Nome</label><input id="name" name="name" value="Motorista Google">
+<label for="email">E-mail</label><input id="email" name="email" type="email" value="google@cashcontrol.local">
+<div class="row"><button class="no" name="cancel" value="1">Cancelar</button><button class="ok" type="submit">Continuar</button></div>
+</form></html>`
+}
 
 function mailboxPage(): string {
-  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
   const items = mailbox
     .map(
       (m) => `<li><b>${esc(m.subject)}</b> → ${esc(m.to)} <small>${esc(new Date(m.at).toLocaleString('pt-BR'))}</small><br><a href="${esc(m.link)}">${esc(m.link)}</a></li>`,

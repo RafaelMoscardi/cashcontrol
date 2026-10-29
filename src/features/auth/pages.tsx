@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CircleAlert, MailCheck } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type * as React from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import { FormField } from '@/components/app/form-field'
 import { LoadingScreen } from '@/components/app/loading-screen'
@@ -14,8 +14,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessage } from '@/lib/errors'
-import { initialAuthLink, supabase } from '@/lib/supabase'
+import { authReturnError, dismissAuthReturnError, initialAuthLink, supabase } from '@/lib/supabase'
 import { useAuth } from './auth-context'
+import { GoogleSignIn } from './google'
 import {
   forgotSchema,
   loginSchema,
@@ -64,8 +65,19 @@ const emailInputProps = {
   spellCheck: false,
 } as const
 
+/** Volta de um login com erro (cancelou no Google, link de e-mail vencido). */
+function authReturnMessage(code: string | null): string | null {
+  if (!code) return null
+  if (code === 'otp_expired') return errorMessage({ code })
+  if (code === 'access_denied') return 'Login cancelado. Tente de novo quando quiser.'
+  return 'Não foi possível concluir o login. Tente de novo.'
+}
+
 export function LoginPage() {
-  const [error, setError] = useState<string | null>(null)
+  const location = useLocation()
+  const next = new URLSearchParams(location.search).get('next')
+  const [error, setError] = useState<string | null>(() => authReturnMessage(authReturnError()))
+  useEffect(() => dismissAuthReturnError, [])
   const { register, handleSubmit, formState } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
@@ -80,6 +92,7 @@ export function LoginPage() {
   return (
     <FocusLayout>
       <AuthHeading title="Entrar" subtitle="Seu lucro real, jornada por jornada." />
+      <GoogleSignIn next={next} onError={setError} />
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         <FormField label="E-mail" htmlFor="email" error={formState.errors.email?.message}>
           <Input id="email" {...emailInputProps} aria-invalid={!!formState.errors.email} {...register('email')} />
@@ -149,6 +162,7 @@ export function SignupPage() {
   return (
     <FocusLayout>
       <AuthHeading title="Criar conta" subtitle="Grátis. Leva um minuto e seus dados ficam só com você." />
+      <GoogleSignIn onError={setError} />
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
         <FormField label="Seu nome" htmlFor="fullName" error={formState.errors.fullName?.message}>
           <Input id="fullName" autoComplete="name" autoCapitalize="words" enterKeyHint="next" aria-invalid={!!formState.errors.fullName} {...register('fullName')} />

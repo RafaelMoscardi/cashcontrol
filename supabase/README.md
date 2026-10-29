@@ -2,6 +2,7 @@
 
 - `migrations/`: mudanças do banco, em ordem. O Supabase aplica sozinho as migrations novas quando o código chega à branch `main` do GitHub (**Project Settings → Integrations → GitHub**: Working directory `.`, **Deploy to production** ligado, branch `main`).
 - `tests/`: testes do banco (RLS, restrições, `save_shift`) num PostgreSQL embutido. Rodam com `npm test`.
+- `templates/`: e-mails em português para colar em **Authentication → Emails → Templates** (só editáveis com SMTP próprio no plano grátis). Assunto na primeira linha de cada arquivo.
 
 ## Regras
 

@@ -7,21 +7,38 @@ const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VIT
 /** Falta configuração: o app mostra uma tela explicando como resolver. */
 export const isSupabaseConfigured = Boolean(url && key)
 
+export const supabaseUrl = url ?? 'http://localhost'
+export const supabaseKey = key ?? 'missing-key'
+
 /**
- * Parâmetros do link de e-mail (recuperação de senha, confirmação), lidos antes
- * de o cliente do Supabase consumir e limpar o hash da URL.
+ * Parâmetros de retorno do Supabase (link de e-mail, volta do login com Google),
+ * lidos antes de o cliente consumir e limpar a URL. Erros podem vir no hash ou na query.
  */
 export const initialAuthLink = (() => {
   if (typeof window === 'undefined') return { type: null, errorCode: null, errorDescription: null }
-  const params = new URLSearchParams(window.location.hash.slice(1))
+  const hash = new URLSearchParams(window.location.hash.slice(1))
+  const query = new URLSearchParams(window.location.search)
+  const pick = (name: string) => hash.get(name) ?? query.get(name)
   return {
-    type: params.get('type'),
-    errorCode: params.get('error_code'),
-    errorDescription: params.get('error_description'),
+    type: pick('type'),
+    errorCode: pick('error_code') ?? pick('error'),
+    errorDescription: pick('error_description'),
   }
 })()
 
-export const supabase = createClient<Database>(url ?? 'http://localhost', key ?? 'missing-key', {
+let authLinkErrorDismissed = false
+
+/** Erro da volta de um login (ex.: cancelou no Google). Some depois que a tela de login sai. */
+export function authReturnError(): string | null {
+  if (authLinkErrorDismissed || initialAuthLink.type === 'recovery' || !initialAuthLink.errorCode) return null
+  return initialAuthLink.errorCode
+}
+
+export function dismissAuthReturnError() {
+  authLinkErrorDismissed = true
+}
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

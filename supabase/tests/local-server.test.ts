@@ -164,6 +164,44 @@ describe('servidor Supabase local', () => {
     expect(login.error).toBeNull()
   })
 
+  it('login com Google simulado: cria a conta na primeira vez, entra na mesma depois, e cancelar volta com erro', async () => {
+    const settings = (await (await fetch(`${server.url}/auth/v1/settings`)).json()) as { external: Record<string, boolean> }
+    expect(settings.external.google).toBe(true)
+
+    const back = 'http://localhost:5180/jornadas'
+    const page = await fetch(`${server.url}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(back)}`)
+    expect(page.status).toBe(200)
+    expect(await page.text()).toContain('Google (simulado)')
+
+    const signIn = async (email: string) => {
+      const response = await fetch(
+        `${server.url}/auth/v1/__fake-google?email=${encodeURIComponent(email)}&name=Ana+Google&redirect_to=${encodeURIComponent(back)}`,
+        { redirect: 'manual' },
+      )
+      expect(response.status).toBe(303)
+      const location = new URL(response.headers.get('location')!)
+      expect(location.pathname).toBe('/jornadas')
+      return new URLSearchParams(location.hash.slice(1))
+    }
+
+    const first = await signIn('ana@gmail.com')
+    const sb = client()
+    const { data } = await sb.auth.setSession({ access_token: first.get('access_token')!, refresh_token: first.get('refresh_token')! })
+    expect(data.user?.app_metadata.provider).toBe('google')
+    const { data: profile } = await sb.from('profiles').select('full_name').single()
+    expect(profile).toEqual({ full_name: 'Ana Google' })
+
+    const second = await signIn('ana@gmail.com')
+    const sub = (token: string) => JSON.parse(Buffer.from(token.split('.')[1]!, 'base64url').toString()).sub
+    expect(sub(second.get('access_token')!)).toBe(data.user!.id)
+
+    const cancel = await fetch(`${server.url}/auth/v1/__fake-google?cancel=1&redirect_to=${encodeURIComponent(back)}`, { redirect: 'manual' })
+    expect(cancel.headers.get('location')).toContain('error=access_denied')
+
+    const other = await fetch(`${server.url}/auth/v1/authorize?provider=github`)
+    expect(other.status).toBe(400)
+  })
+
   it('logout revoga o refresh token', async () => {
     const sb = await signUp('hugo@exemplo.com')
     const { data } = await sb.auth.getSession()

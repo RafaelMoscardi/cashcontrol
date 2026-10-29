@@ -111,6 +111,43 @@ Depois disso, cada `git push` na branch `main` publica sozinho; outras branches 
 
 Publicar sem Git (opcional): `npx wrangler login` e `npx wrangler pages deploy dist --project-name cashcontrol` (gere o `dist` com as variáveis do Supabase no `.env.local`).
 
+## 5. Login com o Google
+
+O botão "Continuar com o Google" aparece sozinho no login e no cadastro quando o Google é ligado no Supabase (o app consulta os logins ativos). Não precisa publicar de novo.
+
+1. Em [console.cloud.google.com](https://console.cloud.google.com), crie um projeto chamado `CashControl`.
+2. Abra **Google Auth Platform** (ou *APIs e serviços → Tela de consentimento OAuth*) → **Get started**: nome do app `CashControl`, seu e-mail de suporte, público **External**, e-mail de contato. Crie.
+3. **Data Access** → *Add or remove scopes*: marque `openid`, `.../auth/userinfo.email` e `.../auth/userinfo.profile`. Esses escopos básicos não passam por verificação.
+4. **Clients** → **Create client** → tipo **Web application**:
+   - *Authorized JavaScript origins*: `https://cashcontrol-app.pages.dev`;
+   - *Authorized redirect URIs*: `https://wgblvqkyybibnuntmkaj.supabase.co/auth/v1/callback` (o mesmo que aparece como *Callback URL* na página do Google no Supabase).
+   - Crie e copie o **Client ID** e o **Client secret**. O secret é sigiloso: só vai no Supabase.
+5. **Audience** → **Publish app** (sai do modo de teste; sem isso, só e-mails cadastrados como testadores conseguem entrar).
+6. No Supabase: **Authentication → Sign In / Providers → Google** → ligue, cole Client ID e Client secret e salve.
+
+A tela do Google vai mostrar "continuar para wgblvqkyybibnuntmkaj.supabase.co". Para aparecer o seu domínio, é preciso o domínio personalizado do Supabase (pago).
+
+## 6. E-mails (recuperação de senha e confirmação de cadastro)
+
+O envio padrão do Supabase só entrega para os e-mails da equipe do projeto (cerca de 2 por hora). Para qualquer usuário receber, ligue um SMTP próprio. Sugestão gratuita: **Brevo** (300 e-mails por dia no plano grátis).
+
+1. **Domínio (recomendado):** com um domínio seu (ex.: `cashcontrol.com.br`, cerca de R$ 40/ano no registro.br), os e-mails saem de `nao-responda@seudominio` e não caem no spam. Sem domínio, o Brevo troca o remetente por um endereço dele ou o Gmail barra a mensagem.
+2. No Brevo: crie a conta grátis → **Senders, Domains & Dedicated IPs → Domains** → adicione e autentique o domínio (registros DNS; se o domínio estiver na Cloudflare, é colar os registros lá).
+3. **SMTP & API → SMTP** → gere uma **SMTP key** e anote o *Login* mostrado na página.
+4. No Supabase: **Authentication → Emails → SMTP Settings** → ligue *Custom SMTP*:
+
+   | Campo | Valor |
+   | --- | --- |
+   | Sender email | `nao-responda@seudominio.com.br` |
+   | Sender name | `CashControl` |
+   | Host | `smtp-relay.brevo.com` |
+   | Port | `587` |
+   | Username | o *Login* do Brevo |
+   | Password | a SMTP key |
+
+5. **Authentication → Rate Limits**: o limite de e-mails por hora começa em 30 com SMTP próprio; aumente se precisar.
+6. **Authentication → Emails → Templates**: cole os modelos em português de [`supabase/templates`](../supabase/templates) (*Confirm signup* e *Reset password*; o assunto está na primeira linha de cada arquivo).
+
 ## Roteiro de teste da etapa 1
 
 Com `npm run dev:local` (ou já publicado):
