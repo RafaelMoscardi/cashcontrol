@@ -3,6 +3,7 @@ import type { PlatformKind } from '@/domain/types'
 export const PLATFORM_KIND_LABEL: Record<PlatformKind, string> = {
   rides: 'Corridas',
   delivery: 'Entregas',
+  taxi: 'Táxi',
   mototaxi: 'Mototáxi',
   private: 'Particular',
   other: 'Outro',
@@ -13,6 +14,8 @@ export const PLATFORM_CATALOG: ReadonlyArray<{ name: string; kind: PlatformKind 
   { name: 'Uber', kind: 'rides' },
   { name: '99', kind: 'rides' },
   { name: 'inDrive', kind: 'rides' },
+  { name: 'Táxi', kind: 'taxi' },
+  { name: '99Táxi', kind: 'taxi' },
   { name: 'iFood', kind: 'delivery' },
   { name: 'Rappi', kind: 'delivery' },
   { name: 'Lalamove', kind: 'delivery' },

@@ -6,7 +6,7 @@ export type Powertrain = 'combustion' | 'hybrid' | 'plugin_hybrid' | 'electric'
 export type FuelType = 'gasoline' | 'ethanol' | 'diesel' | 'cng'
 export type Ownership = 'owned' | 'financed' | 'rented' | 'other'
 export type RentPeriod = 'week' | 'month'
-export type PlatformKind = 'rides' | 'delivery' | 'mototaxi' | 'private' | 'other'
+export type PlatformKind = 'rides' | 'delivery' | 'taxi' | 'mototaxi' | 'private' | 'other'
 
 export type ExpenseCategory =
   | 'fuel'

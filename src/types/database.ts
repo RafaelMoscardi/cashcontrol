@@ -47,7 +47,7 @@ export type PlatformRow = Timestamps & {
   id: string
   user_id: string
   name: string
-  kind: 'rides' | 'delivery' | 'mototaxi' | 'private' | 'other'
+  kind: 'rides' | 'delivery' | 'taxi' | 'mototaxi' | 'private' | 'other'
   color: string
   sort_order: number
   archived_at: string | null

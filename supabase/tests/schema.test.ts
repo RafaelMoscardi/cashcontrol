@@ -180,6 +180,16 @@ describe('veículos', () => {
     await expect(as(alice, (tx) => insertVehicle(tx, { brand: 'x'.repeat(41) }))).rejects.toMatchObject({ code: '23514' })
   })
 
+  it('aceita todo tipo de plataforma que o app oferece, inclusive táxi, e recusa tipo desconhecido', async () => {
+    // Os mesmos de PLATFORM_KIND_LABEL (src/features/platforms/catalog.ts): tipo novo no app pede migration
+    for (const kind of ['rides', 'delivery', 'taxi', 'mototaxi', 'private', 'other']) {
+      await as(alice, (tx) => insertRow(tx, 'platforms', { name: `Tipo ${kind}`, kind }))
+    }
+    await expect(as(alice, (tx) => insertRow(tx, 'platforms', { name: 'Ônibus', kind: 'bus' }))).rejects.toMatchObject({
+      code: '23514',
+    })
+  })
+
   it('moto só pode ser a combustão ou elétrica', async () => {
     await expect(as(alice, (tx) => insertVehicle(tx, { kind: 'motorcycle', powertrain: 'hybrid' }))).rejects.toMatchObject({
       code: '23514',
