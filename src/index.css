@@ -191,6 +191,18 @@
     -webkit-appearance: none;
     margin: 0;
   }
+  /* iPhone: com a aparência nativa, o Safari impõe a data e hora uma largura mínima dele e soma o
+     espaçamento por fora dos 100%, e os campos vazavam do card (um por cima do outro). Sem ela, ocupam
+     só a coluna; o seletor de rolinho do iOS continua igual. */
+  input[type="date"],
+  input[type="time"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value {
+    text-align: left;
+  }
   /* Ícone nativo de data/hora claro no tema escuro */
   input[type="date"]::-webkit-calendar-picker-indicator,
   input[type="time"]::-webkit-calendar-picker-indicator {
