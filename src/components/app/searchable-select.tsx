@@ -1,5 +1,6 @@
 import { ChevronDown, type LucideIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import type * as React from 'react'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -61,6 +62,45 @@ export function SearchableSelect({
     setOpen(false)
   }
 
+  // No toque, vale o item em que o dedo encostou e soltou sem arrastar. O clique que o celular
+  // dispara depois pode cair em outro item: ao fechar o teclado da busca, a lista anda.
+  const touch = useRef<{ id: number; x: number; y: number; action: () => void } | null>(null)
+  const touchedAt = useRef(0)
+  // Depois de "Não achei", o foco vai para o campo de digitar; a lista não o devolve ao botão ao fechar
+  const [keepFocus, setKeepFocus] = useState(false)
+  const onCloseAutoFocus = (e: Event) => {
+    if (!keepFocus) return
+    e.preventDefault()
+    setKeepFocus(false)
+  }
+  // No celular, o campo de digitar só aparece quando a gaveta termina de fechar (0,5 s, a animação do vaul):
+  // assim o clique atrasado do toque cai na gaveta, e não na tela de trás, e o foco não se perde
+  const chooseExtra = () => {
+    setKeepFocus(true)
+    setOpen(false)
+    if (desktop) extraAction?.onSelect()
+    else window.setTimeout(() => extraAction?.onSelect(), 500)
+  }
+  const tap = (action: () => void) => ({
+    onPointerDown: (e: React.PointerEvent) => {
+      touch.current = e.pointerType === 'mouse' ? null : { id: e.pointerId, x: e.clientX, y: e.clientY, action }
+    },
+    onPointerUp: (e: React.PointerEvent) => {
+      const start = touch.current
+      touch.current = null
+      if (!start || start.id !== e.pointerId || Math.hypot(e.clientX - start.x, e.clientY - start.y) > 10) return
+      touchedAt.current = Date.now()
+      start.action()
+    },
+    onPointerCancel: () => {
+      touch.current = null
+    },
+    // Mouse e teclado (Enter) seguem pelo onSelect; logo depois de um toque, ele é ignorado
+    onSelect: () => {
+      if (Date.now() - touchedAt.current > 700) action()
+    },
+  })
+
   const trigger = (
     <button
       id={id}
@@ -96,7 +136,7 @@ export function SearchableSelect({
                     value={item}
                     keywords={[item]}
                     data-checked={item === value}
-                    onSelect={() => choose(item)}
+                    {...tap(() => choose(item))}
                     // No toque o primeiro item não parece pré-escolhido; o destaque fica só para o teclado
                     className="pointer-coarse:py-3 pointer-coarse:data-selected:bg-transparent pointer-coarse:active:bg-muted"
                   >
@@ -112,10 +152,7 @@ export function SearchableSelect({
               forceMount
               value={`__extra:${extraAction.label}`}
               className="text-link"
-              onSelect={() => {
-                setOpen(false)
-                extraAction.onSelect()
-              }}
+              {...tap(chooseExtra)}
             >
               <extraAction.icon aria-hidden="true" />
               {extraAction.label}
@@ -130,7 +167,7 @@ export function SearchableSelect({
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-        <PopoverContent align="start" className="w-(--radix-popover-trigger-width) min-w-64 p-1">
+        <PopoverContent align="start" className="w-(--radix-popover-trigger-width) min-w-64 p-1" onCloseAutoFocus={onCloseAutoFocus}>
           {list}
         </PopoverContent>
       </Popover>
@@ -140,7 +177,7 @@ export function SearchableSelect({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>{trigger}</DrawerTrigger>
-      <DrawerContent className="h-[80dvh]">
+      <DrawerContent className="h-[80dvh]" onCloseAutoFocus={onCloseAutoFocus}>
         <DrawerHeader className="pb-2">
           <DrawerTitle>{title}</DrawerTitle>
         </DrawerHeader>
