@@ -51,7 +51,7 @@ export function CookieNotice({ aboveNav = false }: { aboveNav?: boolean }) {
         </p>
       </div>
       <div className="mt-3 flex justify-end">
-        <Button size="sm" onClick={dismiss}>
+        <Button size="sm" className="touch-target" onClick={dismiss}>
           Entendi
         </Button>
       </div>

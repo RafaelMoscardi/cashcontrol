@@ -1,5 +1,5 @@
 import type * as React from 'react'
-import { Outlet, ScrollRestoration } from 'react-router'
+import { Link, Outlet, ScrollRestoration } from 'react-router'
 import { Logo } from '@/components/app/logo'
 import { CookieNotice } from '@/features/legal/cookie-notice'
 import { BottomNav, Sidebar } from './navigation'
@@ -24,7 +24,9 @@ export function FocusLayout({ children, wide = false }: { children: React.ReactN
   return (
     <div className="app-glow flex min-h-dvh flex-col px-4 pt-[calc(var(--safe-top)+1.5rem)] pb-[calc(var(--safe-bottom)+2rem)] sm:px-6">
       <header className="mx-auto mb-8 flex w-full max-w-5xl items-center justify-between">
-        <Logo />
+        <Link to="/" aria-label="CashControl, página inicial" className="inline-flex min-h-11 items-center rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+          <Logo />
+        </Link>
       </header>
       <main className={wide ? 'mx-auto w-full max-w-2xl' : 'mx-auto w-full max-w-sm'}>{children}</main>
       <CookieNotice />

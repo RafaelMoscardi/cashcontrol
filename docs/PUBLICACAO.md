@@ -128,7 +128,7 @@ O botão "Continuar com o Google" aparece sozinho no login e no cadastro quando 
 A tela do Google mostra "Prosseguir para wgblvqkyybibnuntmkaj.supabase.co" até a marca ser verificada. O login funciona assim mesmo. Para aparecer "CashControl", o Google pede:
 
 - **site verificado no Search Console**, na mesma conta Google do projeto. Usamos a propriedade de prefixo de URL `https://cashcontrol-app.pages.dev/` com o arquivo `public/googlea54dc3d2f8ea48a9.html`. **Não apague esse arquivo**: sem ele, a verificação cai;
-- **página inicial pública** que explique o app e por que ele usa nome e e-mail do Google, com link para a Privacidade;
+- **página inicial pública** que explique o app e por que ele usa nome e e-mail do Google, com link para a Privacidade. Ela fica em `src/features/home/home-page.tsx` e aparece em `/` para quem não entrou;
 - 24 horas depois de verificar o site, em **Verification Center → Ver problemas → Corrigi os problemas**.
 
 Também dá para trocar o endereço do Supabase por um domínio próprio, mas isso é pago.

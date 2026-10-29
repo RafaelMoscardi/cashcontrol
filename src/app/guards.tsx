@@ -1,15 +1,27 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { LoadingScreen } from '@/components/app/loading-screen'
 import { useAuth } from '@/features/auth/auth-context'
 import { useProfile } from '@/features/profile/api'
+import { authReturnError } from '@/lib/supabase'
 
-/** Só entra logado; senão vai para /entrar e volta depois. */
+const HomePage = lazy(() => import('@/features/home/home-page').then((m) => ({ default: m.HomePage })))
+
+/** Só entra logado; senão vai para /entrar e volta depois. Em "/", quem não entrou vê a página inicial pública. */
 export function RequireAuth() {
   const { session, loading, recovering } = useAuth()
   const location = useLocation()
   if (loading) return <LoadingScreen />
   if (recovering) return <Navigate to="/redefinir-senha" replace />
   if (!session) {
+    // A volta de um login com erro (Google cancelado, link vencido) segue para /entrar, que explica o erro
+    if (location.pathname === '/' && !authReturnError()) {
+      return (
+        <Suspense fallback={<LoadingScreen />}>
+          <HomePage />
+        </Suspense>
+      )
+    }
     const next = location.pathname === '/' ? '' : `?next=${encodeURIComponent(location.pathname + location.search)}`
     return <Navigate to={`/entrar${next}`} replace />
   }
