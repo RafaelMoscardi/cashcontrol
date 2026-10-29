@@ -6,8 +6,10 @@ import { BottomNav, Sidebar } from './navigation'
 
 /** Telas logadas: barra lateral no desktop, barra inferior no celular. */
 export function AppLayout() {
+  // overflow-x-clip: o que passar da largura é cortado ali mesmo, sem a página inteira rolar para o lado
+  // (no iPhone isso deslocava a tela e tirava a barra de baixo do lugar)
   return (
-    <div className="app-glow min-h-dvh lg:pl-64">
+    <div className="app-glow min-h-dvh overflow-x-clip lg:pl-64">
       <Sidebar className="hidden lg:flex" />
       <main className="mx-auto w-full max-w-5xl px-4 pb-[calc(var(--bottom-nav-h)+var(--safe-bottom)+2.5rem)] sm:px-6 lg:px-10 lg:pb-16">
         <Outlet />

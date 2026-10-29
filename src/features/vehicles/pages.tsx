@@ -18,10 +18,11 @@ import { FUEL_LABEL, OWNERSHIP_LABEL, POWERTRAIN_LABEL } from './labels'
 import { emptyVehicleForm, vehicleToForm, type VehicleFormValues } from './schema'
 import { VehicleForm } from './vehicle-form'
 
+// \u00a0: número e unidade nunca se separam, e a linha só quebra depois do "·" e do "+"
 function energyLabel(v: Vehicle): string {
-  if (v.powertrain === 'electric') return `${formatNumber(v.electricKmPerKwh ?? 0, 1)} km/kWh`
-  const fuel = `${FUEL_LABEL[v.fuelType ?? 'gasoline']} · ${formatNumber(v.fuelKmPerUnit ?? 0, 1)} km/${fuelUnit(v.fuelType)}`
-  return v.powertrain === 'plugin_hybrid' ? `${fuel} + ${formatNumber(v.electricKmPerKwh ?? 0, 1)} km/kWh` : fuel
+  if (v.powertrain === 'electric') return `${formatNumber(v.electricKmPerKwh ?? 0, 1)}\u00a0km/kWh`
+  const fuel = `${FUEL_LABEL[v.fuelType ?? 'gasoline']}\u00a0· ${formatNumber(v.fuelKmPerUnit ?? 0, 1)}\u00a0km/${fuelUnit(v.fuelType)}`
+  return v.powertrain === 'plugin_hybrid' ? `${fuel}\u00a0+ ${formatNumber(v.electricKmPerKwh ?? 0, 1)}\u00a0km/kWh` : fuel
 }
 
 function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
@@ -42,20 +43,21 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="truncate font-semibold">{vehicle.name}</h2>
+          <h2 className="min-w-0 truncate font-semibold">{vehicle.name}</h2>
           <Badge variant="secondary" className="rounded-md">
             {vehicle.kind === 'motorcycle' && vehicle.powertrain === 'electric' ? 'Elétrica' : POWERTRAIN_LABEL[vehicle.powertrain]}
           </Badge>
           {vehicle.archivedAt && <Badge variant="outline">Arquivado</Badge>}
         </div>
-        <p className="mt-0.5 truncate text-sm text-muted-foreground">
+        {/* Quebra em vez de cortar: no celular estreito o corte escondia o consumo */}
+        <p className="mt-0.5 text-sm text-pretty wrap-break-word text-muted-foreground">
           {[
             [vehicle.brand, vehicle.model].filter(Boolean).join(' '),
             vehicle.plate,
             usesFuel(vehicle.powertrain) || vehicle.powertrain === 'electric' ? energyLabel(vehicle) : null,
           ]
             .filter(Boolean)
-            .join(' · ')}
+            .join('\u00a0· ')}
         </p>
         <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
           <span>
@@ -111,7 +113,8 @@ export function VehiclesPage() {
           </EmptyContent>
         </Empty>
       )}
-      <div className="grid gap-3 lg:grid-cols-2">
+      {/* grid-cols-1: sem coluna definida, o card cresce até caber a linha inteira e vaza da tela */}
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         {active.map((v) => (
           <VehicleCard key={v.id} vehicle={v} />
         ))}
@@ -119,7 +122,7 @@ export function VehiclesPage() {
       {archived.length > 0 && (
         <section className="mt-8">
           <h2 className="mb-3 text-sm font-medium text-muted-foreground">Arquivados</h2>
-          <div className="grid gap-3 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {archived.map((v) => (
               <VehicleCard key={v.id} vehicle={v} />
             ))}
