@@ -53,7 +53,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,webmanifest}'],
         // Português só usa o subconjunto latin da fonte; os outros baixam sob demanda (unicode-range)
-        globIgnores: ['**/geist-cyrillic*', '**/geist-vietnamese*', '**/geist-latin-ext*'],
+        // O arquivo de verificação do Google (Search Console) não faz parte do app
+        globIgnores: ['**/geist-cyrillic*', '**/geist-vietnamese*', '**/geist-latin-ext*', 'google*.html'],
         navigateFallback: '/index.html',
         // Chamadas ao Supabase nunca vão para o cache: dado financeiro é sempre o do servidor.
         // /.well-known/ (security.txt) é arquivo de verdade, não rota do app.
