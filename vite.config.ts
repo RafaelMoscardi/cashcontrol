@@ -55,8 +55,9 @@ export default defineConfig({
         // Português só usa o subconjunto latin da fonte; os outros baixam sob demanda (unicode-range)
         globIgnores: ['**/geist-cyrillic*', '**/geist-vietnamese*', '**/geist-latin-ext*'],
         navigateFallback: '/index.html',
-        // Chamadas ao Supabase nunca vão para o cache: dado financeiro é sempre o do servidor
-        navigateFallbackDenylist: [/^\/(auth|rest)\//],
+        // Chamadas ao Supabase nunca vão para o cache: dado financeiro é sempre o do servidor.
+        // /.well-known/ (security.txt) é arquivo de verdade, não rota do app.
+        navigateFallbackDenylist: [/^\/(auth|rest)\//, /^\/\.well-known\//],
         cleanupOutdatedCaches: true,
       },
       devOptions: { enabled: false },

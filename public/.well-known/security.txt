@@ -1,0 +1,7 @@
+# Encontrou uma falha de segurança no CashControl? Escreva para o contato abaixo.
+# Formato: RFC 9116. Renove o campo Expires antes de vencer.
+Contact: mailto:rafaelmoscardi07@gmail.com
+Expires: 2027-10-28T23:59:59.000Z
+Preferred-Languages: pt, en
+Canonical: https://cashcontrol-app.pages.dev/.well-known/security.txt
+Policy: https://cashcontrol-app.pages.dev/seguranca
