@@ -93,6 +93,20 @@ describe('cadastro', () => {
     ).rejects.toMatchObject({ code: '42501' })
     await expect(as(alice, (tx) => tx.query('delete from public.profiles'))).rejects.toMatchObject({ code: '42501' })
   })
+
+  it('ensure_profile recria só o próprio perfil que sumiu, zerado; visitante não chama', async () => {
+    const carlos = await createUser('carlos@exemplo.com', 'Carlos Lima')
+    await db.query('delete from public.profiles where id = $1', [carlos])
+    await as(carlos, (tx) => tx.query('select public.ensure_profile()'))
+    await as(carlos, (tx) => tx.query('select public.ensure_profile()'))
+    const { rows } = await db.query('select id, full_name, onboarded_at from public.profiles where id = $1', [carlos])
+    expect(rows).toEqual([{ id: carlos, full_name: 'Carlos Lima', onboarded_at: null }])
+    const aliceProfile = await db.query('select full_name from public.profiles where id = $1', [alice])
+    expect(aliceProfile.rows).toEqual([{ full_name: 'Alice Souza' }])
+    await expect(withClaims(db, { role: 'anon' }, (tx) => tx.query('select public.ensure_profile()'))).rejects.toMatchObject({
+      code: '42501',
+    })
+  })
 })
 
 describe('isolamento entre usuários (RLS)', () => {

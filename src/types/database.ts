@@ -186,6 +186,10 @@ export type Database = {
         Args: { p_id: string }
         Returns: Json
       }
+      ensure_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }

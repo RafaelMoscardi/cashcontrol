@@ -39,6 +39,11 @@ export function useProfile(enabled = true) {
   return useQuery({ queryKey: queryKeys.profile, queryFn: fetchProfile, enabled, retryOnMount: false })
 }
 
+/** Recria o perfil que sumiu do banco. A conta volta para o primeiro acesso, como nova. */
+export async function ensureProfile(): Promise<void> {
+  unwrap(await supabase.rpc('ensure_profile'))
+}
+
 /**
  * A conta ainda existe? Apagada no painel do Supabase, o token guardado continua valendo por até 1 h
  * e só o Auth sabe que ela sumiu. Sem internet, a resposta é sim: ninguém sai da conta por estar offline.

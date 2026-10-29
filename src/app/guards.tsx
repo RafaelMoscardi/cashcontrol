@@ -1,10 +1,10 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, type RefObject, Suspense, useEffect, useRef, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { LoadingScreen } from '@/components/app/loading-screen'
 import { Button } from '@/components/ui/button'
 import { APP_INFO } from '@/config/app'
 import { useAuth } from '@/features/auth/auth-context'
-import { accountExists, useProfile } from '@/features/profile/api'
+import { accountExists, ensureProfile, useProfile } from '@/features/profile/api'
 import { isNotFound } from '@/lib/errors'
 import { accountGoneNotice, authReturnError, noteAccountGone, supabase } from '@/lib/supabase'
 import { FocusLayout } from './layouts'
@@ -32,34 +32,51 @@ export function RequireAuth() {
   return <Outlet />
 }
 
-/** Perfil carregado antes das telas logadas. Sem perfil no banco, não fica girando: confere a conta e explica. */
+/** Perfil carregado antes das telas logadas. Sem perfil no banco, não fica girando: confere a conta e resolve. */
 export function RequireProfile() {
   const profile = useProfile()
+  // Uma tentativa de recriar o perfil por vez: se não pegar, a tela explica em vez de repetir sem fim
+  const healTried = useRef(false)
   if (profile.isPending) return <LoadingScreen />
-  if (isNotFound(profile.error)) return <MissingProfile onRetry={() => void profile.refetch()} />
+  if (isNotFound(profile.error)) return <MissingProfile healTried={healTried} refetch={profile.refetch} />
   return <Outlet />
 }
 
-/** Conta sem perfil. Se a conta foi apagada, sai dela e a tela de entrar explica; se não, mostra o problema. */
-function MissingProfile({ onRetry }: { onRetry: () => void }) {
+/**
+ * Conta sem perfil. Conta apagada: sai dela e a tela de entrar explica. Conta que existe (perfil apagado
+ * à mão no painel): recria o perfil e ela recomeça pelo primeiro acesso, como nova.
+ */
+function MissingProfile({ healTried, refetch }: { healTried: RefObject<boolean>; refetch: () => Promise<unknown> }) {
   const { signOut } = useAuth()
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
     let active = true
-    void accountExists().then(async (exists) => {
-      if (!active) return
-      if (exists) {
-        setChecking(false)
+    void (async () => {
+      if (!(await accountExists())) {
+        if (!active) return
+        noteAccountGone()
+        await supabase.auth.signOut({ scope: 'local' })
         return
       }
-      noteAccountGone()
-      await supabase.auth.signOut({ scope: 'local' })
-    })
+      if (!healTried.current) {
+        healTried.current = true
+        if (await ensureProfile().then(() => true, () => false)) {
+          void refetch()
+          return
+        }
+      }
+      if (active) setChecking(false)
+    })()
     return () => {
       active = false
     }
-  }, [])
+  }, [healTried, refetch])
+
+  const retry = () => {
+    healTried.current = false
+    void refetch()
+  }
 
   if (checking) return <LoadingScreen />
   return (
@@ -73,7 +90,7 @@ function MissingProfile({ onRetry }: { onRetry: () => void }) {
         .
       </p>
       <div className="mt-6 flex flex-wrap gap-2">
-        <Button onClick={onRetry}>Tentar de novo</Button>
+        <Button onClick={retry}>Tentar de novo</Button>
         <Button variant="outline" onClick={() => void signOut()}>
           Sair da conta
         </Button>
