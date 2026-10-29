@@ -119,7 +119,7 @@ export function LoginPage() {
         <FormField label="Senha" htmlFor="password" error={formState.errors.password?.message}>
           <PasswordInput id="password" autoComplete="current-password" aria-invalid={!!formState.errors.password} {...register('password')} />
         </FormField>
-        <Link to="/recuperar-senha" className="-mt-1 self-end text-sm text-primary underline-offset-4 hover:underline">
+        <Link to="/recuperar-senha" className="-mt-1 self-end text-sm text-link underline-offset-4 hover:underline">
           Esqueci minha senha
         </Link>
         <FormAlert message={error} />

@@ -46,7 +46,7 @@ function NavRow({ to, icon: Icon, label, description }: { to: string; icon: Reac
       </span>
       <span className="min-w-0 flex-1">
         <span className="block font-medium">{label}</span>
-        <span className="block truncate text-[0.8125rem] text-muted-foreground">{description}</span>
+        <span className="block text-[0.8125rem] text-pretty text-muted-foreground">{description}</span>
       </span>
       <ChevronRight className="size-5 text-faint transition-transform group-hover:translate-x-0.5" />
     </Link>
@@ -191,7 +191,7 @@ export function MorePage() {
   return (
     <>
       <PageHeader title="Mais" />
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 lg:max-w-2xl">
         <ProfileCard />
         <SectionCard>
           <NavRow to="/veiculos" icon={Car} label="Veículos" description="Consumo, reservas por km e custos fixos" />
@@ -201,7 +201,7 @@ export function MorePage() {
         <SecurityCard />
         <InstallCard />
         <SectionCard title="Como o lucro é calculado" icon={CircleQuestionMark}>
-          <ul className="flex flex-col gap-2.5 text-sm text-muted-foreground">
+          <ul className="flex max-w-[30em] flex-col gap-2.5 text-sm text-pretty text-muted-foreground">
             <li>
               <strong className="text-foreground">Ganhos:</strong> o valor líquido que a plataforma pagou. A taxa dela nunca é descontada de novo.
             </li>

@@ -130,7 +130,7 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
                       onClick={() => field.onChange(m)}
                       aria-pressed={field.value === m}
                       className={cn(
-                        'h-9 rounded-full border px-3.5 text-sm font-medium outline-none transition-[background-color,border-color,color,transform] duration-150 ease-snappy active:scale-[0.96]',
+                        'touch-target h-9 rounded-full border px-3.5 text-sm font-medium outline-none transition-[background-color,border-color,color,transform] duration-150 ease-snappy active:scale-[0.96]',
                         'focus-visible:ring-3 focus-visible:ring-ring/50',
                         field.value === m ? 'border-primary/70 bg-primary/15 text-foreground' : 'border-input text-muted-foreground hover:text-foreground',
                       )}
@@ -224,7 +224,7 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
                   <>
                     Custos da época do registro: <span className="text-foreground tabular-nums">{formatReais(snapshot?.energyCostPerKm ?? 0, 4)}/km</span> de energia.
                     {snapshotChanged && (
-                      <Button type="button" variant="link" size="sm" className="h-auto px-0 pl-1" onClick={() => setUseCurrentCosts(true)}>
+                      <Button type="button" variant="link" size="sm" className="touch-target h-auto px-0 pl-1" onClick={() => setUseCurrentCosts(true)}>
                         <RefreshCw data-icon="inline-start" />
                         Usar a configuração atual do veículo
                       </Button>
@@ -385,7 +385,7 @@ function EarningRow({ index, control, platforms, usedPlatforms, errors, canRemov
           />
         </div>
         {canRemove && (
-          <Button type="button" variant="ghost" size="icon-sm" className="mt-6 shrink-0 text-muted-foreground" onClick={onRemove} aria-label="Remover plataforma">
+          <Button type="button" variant="ghost" size="icon-sm" className="touch-target mt-6 shrink-0 text-muted-foreground" onClick={onRemove} aria-label="Remover plataforma">
             <X />
           </Button>
         )}
@@ -395,7 +395,7 @@ function EarningRow({ index, control, platforms, usedPlatforms, errors, canRemov
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="mt-2 flex items-center gap-1 rounded-md text-[0.8125rem] text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="-mb-2 flex min-h-11 items-center gap-1 rounded-md text-[0.8125rem] text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <ChevronDown className={cn('size-4 transition-transform duration-200 ease-snappy', open && 'rotate-180')} />
         Gorjetas, bônus e corridas

@@ -38,7 +38,7 @@ function CustomRange({ range, onApply, active }: { range: DateRange; onApply: (r
       <PopoverTrigger asChild>
         <Button
           variant={active ? 'default' : 'outline'}
-          className="h-11 shrink-0 rounded-2xl px-3"
+          className="h-11 min-w-11 shrink-0 rounded-2xl px-3"
           aria-label={active ? `Período de ${formatDate(range.from)} a ${formatDate(range.to)}` : 'Escolher datas'}
         >
           <CalendarDays />
@@ -163,8 +163,8 @@ export function DashboardPage() {
     <>
       <header className="flex flex-wrap items-end justify-between gap-3 pt-[calc(var(--safe-top)+1.25rem)] pb-4 lg:pt-10">
         <div>
-          <p className="text-sm text-muted-foreground">{capitalize(formatDateLong(today))}</p>
           <h1 className="text-[1.625rem] leading-tight font-semibold tracking-tight lg:text-3xl">{name ? `Olá, ${name}` : 'Seu painel'}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{capitalize(formatDateLong(today))}</p>
         </div>
       </header>
 
@@ -174,7 +174,7 @@ export function DashboardPage() {
           value={choice === 'custom' || choice === '7d' ? ('' as PeriodPreset) : choice}
           onValueChange={setPreset}
           options={PERIOD_OPTIONS}
-          className="min-w-0 flex-1"
+          className="min-w-0 flex-1 lg:w-auto lg:flex-none"
         />
         <CustomRange range={range} onApply={setCustom} active={choice === 'custom'} />
       </div>

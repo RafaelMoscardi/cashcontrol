@@ -42,10 +42,10 @@ function PlatformRow({ platform }: { platform: Platform }) {
           }}
         >
           <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={30} aria-label="Nome da plataforma" className="h-10" autoFocus />
-          <Button type="submit" size="icon-sm" aria-label="Salvar nome" disabled={!name.trim() || update.isPending}>
+          <Button type="submit" size="icon-sm" className="touch-target" aria-label="Salvar nome" disabled={!name.trim() || update.isPending}>
             <Check />
           </Button>
-          <Button type="button" variant="ghost" size="icon-sm" aria-label="Cancelar" onClick={() => setEditing(false)}>
+          <Button type="button" variant="ghost" size="icon-sm" className="touch-target" aria-label="Cancelar" onClick={() => setEditing(false)}>
             <X />
           </Button>
         </form>
@@ -55,7 +55,7 @@ function PlatformRow({ platform }: { platform: Platform }) {
             <p className="truncate font-medium">{platform.name}</p>
           </div>
           <Select value={platform.kind} onValueChange={(kind) => void save({ kind: kind as PlatformKind })} disabled={!!platform.archivedAt}>
-            <SelectTrigger size="sm" className="w-32 text-xs" aria-label={`Tipo de ${platform.name}`}>
+            <SelectTrigger size="sm" className="touch-target w-32 text-xs" aria-label={`Tipo de ${platform.name}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -67,13 +67,14 @@ function PlatformRow({ platform }: { platform: Platform }) {
             </SelectContent>
           </Select>
           {!platform.archivedAt && (
-            <Button variant="ghost" size="icon-sm" aria-label={`Renomear ${platform.name}`} onClick={() => setEditing(true)}>
+            <Button variant="ghost" size="icon-sm" className="touch-target" aria-label={`Renomear ${platform.name}`} onClick={() => setEditing(true)}>
               <Pencil />
             </Button>
           )}
           <Button
             variant="ghost"
             size="icon-sm"
+            className="touch-target"
             aria-label={platform.archivedAt ? `Reativar ${platform.name}` : `Arquivar ${platform.name}`}
             onClick={() => void save({ archived: !platform.archivedAt })}
             disabled={update.isPending}
@@ -161,9 +162,11 @@ export function PlatformsPage() {
                       key={s.name}
                       type="button"
                       onClick={() => void add([s])}
-                      className="h-9 rounded-full border border-input px-3.5 text-sm text-muted-foreground outline-none transition-[background-color,color,transform] duration-150 ease-snappy hover:bg-white/[0.04] hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96]"
+                      aria-label={`Adicionar ${s.name}`}
+                      className="touch-target inline-flex h-9 items-center gap-1 rounded-full border border-input pr-3.5 pl-2.5 text-sm text-muted-foreground outline-none transition-[background-color,color,transform] duration-150 ease-snappy hover:bg-white/[0.04] hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96]"
                     >
-                      + {s.name}
+                      <Plus className="size-3.5" aria-hidden="true" />
+                      {s.name}
                     </button>
                   ))}
                 </div>

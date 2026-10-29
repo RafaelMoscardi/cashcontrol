@@ -131,7 +131,7 @@ export function DailyChart({ points }: { points: DailyPoint[] }) {
       title="Faturamento e lucro por dia"
       description="Lucro antes dos custos fixos."
       action={
-        <Button variant="ghost" size="sm" onClick={() => setAsTable((v) => !v)} aria-pressed={asTable}>
+        <Button variant="ghost" size="sm" className="touch-target" onClick={() => setAsTable((v) => !v)} aria-pressed={asTable}>
           <Table2 data-icon="inline-start" />
           {asTable ? 'Gráfico' : 'Tabela'}
         </Button>
@@ -312,7 +312,7 @@ export function CostChart({ items, revenue }: { items: Array<{ label: string; ce
         {items.map((item) => (
           <li key={item.label}>
             <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
-              <span className="min-w-0 truncate text-secondary-foreground">
+              <span className="min-w-0 text-pretty text-secondary-foreground">
                 {item.label}
                 {item.hint && <span className="text-muted-foreground"> · {item.hint}</span>}
               </span>

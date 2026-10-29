@@ -44,6 +44,7 @@
   /* Tokens do produto */
   --color-surface-2: var(--surface-2);
   --color-primary-strong: var(--primary-strong);
+  --color-link: var(--link);
   --color-positive: var(--positive);
   --color-negative: var(--negative);
   --color-warning: var(--warning);
@@ -78,15 +79,19 @@
   --popover: #18171f;
   --popover-foreground: #f4f3f8;
 
+  /* primary: ícones, anéis e gráficos. Preenchimento com texto branco usa
+     primary-strong (5,7:1); texto roxo sobre o escuro usa link (6,3:1 ou mais). */
   --primary: #8b5cf6;
   --primary-strong: #7c3aed;
   --primary-foreground: #ffffff;
+  --link: #a78bfa;
 
   --secondary: #1d1c27;
   --secondary-foreground: #ebe9f3;
   --muted: #1d1c27;
   --muted-foreground: #a09db0;
-  --faint: #6f6c80;
+  /* Texto terciário: 4,8:1 ou mais em todas as superfícies (AA) */
+  --faint: #8a879b;
   --accent: #24212f;
   --accent-foreground: #f4f3f8;
 
@@ -137,6 +142,9 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     overscroll-behavior: none;
+    /* Cursor de texto e controles nativos (data, hora) na cor da marca */
+    caret-color: var(--primary);
+    accent-color: var(--primary);
   }
   body {
     @apply bg-background text-foreground antialiased;
@@ -183,6 +191,20 @@
   }
   ::selection {
     background: rgb(139 92 246 / 0.35);
+  }
+}
+
+/* Área de toque de no mínimo 44 px sem mudar o tamanho visível do controle */
+@utility touch-target {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 2.75rem);
+    height: max(100%, 2.75rem);
+    transform: translate(-50%, -50%);
   }
 }
 

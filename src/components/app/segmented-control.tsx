@@ -26,7 +26,7 @@ export function SegmentedControl<T extends string>({
       value={value}
       onValueChange={(v) => v && onValueChange(v as T)}
       className={cn(
-        'flex w-full max-w-full gap-1 overflow-x-auto rounded-2xl border border-white/6 bg-white/[0.03] p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+        'flex w-full max-w-full gap-1 overflow-x-auto overflow-y-hidden rounded-2xl border border-white/6 bg-white/[0.03] p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
         className,
       )}
       {...aria}
@@ -36,10 +36,10 @@ export function SegmentedControl<T extends string>({
           key={option.value}
           value={option.value}
           className={cn(
-            'flex-1 shrink-0 rounded-xl px-3 font-medium whitespace-nowrap text-muted-foreground outline-none',
+            'touch-target flex-1 shrink-0 rounded-xl px-3 font-medium whitespace-nowrap text-muted-foreground outline-none lg:px-4',
             'transition-[background-color,color,transform] duration-150 ease-snappy active:scale-[0.97]',
             'hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50',
-            'data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-[0_6px_16px_-8px_rgb(139_92_246/0.9)]',
+            'data-[state=on]:bg-primary-strong data-[state=on]:text-primary-foreground data-[state=on]:shadow-[0_6px_16px_-8px_rgb(139_92_246/0.9)]',
             size === 'sm' ? 'h-8 text-xs' : 'h-9 text-[0.8125rem]',
           )}
         >

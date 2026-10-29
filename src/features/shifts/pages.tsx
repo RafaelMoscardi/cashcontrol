@@ -143,13 +143,13 @@ export function ShiftsPage() {
         }
       />
       <div className="mb-4 flex items-center justify-between gap-2 rounded-2xl border border-white/[0.06] bg-card p-1.5">
-        <Button variant="ghost" size="icon-sm" onClick={() => goTo(-1)} aria-label="Mês anterior">
+        <Button variant="ghost" size="icon-sm" className="touch-target" onClick={() => goTo(-1)} aria-label="Mês anterior">
           <ChevronLeft className="size-5" />
         </Button>
         <p className="text-[0.9375rem] font-medium" aria-live="polite">
           {capitalize(formatMonthYear(month))}
         </p>
-        <Button variant="ghost" size="icon-sm" onClick={() => goTo(1)} disabled={isCurrentMonth} aria-label="Próximo mês">
+        <Button variant="ghost" size="icon-sm" className="touch-target" onClick={() => goTo(1)} disabled={isCurrentMonth} aria-label="Próximo mês">
           <ChevronRight className="size-5" />
         </Button>
       </div>
@@ -312,7 +312,7 @@ export function ShiftFormPage() {
     <>
       <PageHeader
         title={original ? 'Editar jornada' : 'Registrar jornada'}
-        eyebrow={original ? capitalize(formatDateLong(original.workDate)) : undefined}
+        description={original ? capitalize(formatDateLong(original.workDate)) : undefined}
         backTo={original ? `/jornadas?mes=${original.workDate.slice(0, 7)}` : '/'}
       />
       <ShiftForm

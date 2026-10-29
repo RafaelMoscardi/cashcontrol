@@ -8,21 +8,24 @@ import { formatDate } from '@/lib/format'
 function LegalPage({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <FocusLayout wide>
-      <Link to="/" className="mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground">
-        <ChevronLeft className="size-4" />
-        Voltar ao app
-      </Link>
-      <article className="pb-10 text-[0.9375rem] leading-relaxed text-secondary-foreground [&_h2]:mt-8 [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-foreground [&_li]:mt-1.5 [&_p]:mt-3 [&_strong]:text-foreground [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5">
-        <h1 className="text-[1.75rem] leading-tight font-semibold tracking-tight text-foreground">{title}</h1>
-        <p className="!mt-2 text-sm text-muted-foreground">Atualizado em {formatDate(APP_INFO.legalUpdatedAt)}</p>
-        {children}
-      </article>
+      {/* ~70 caracteres por linha (em, não ch: o "0" da Geist é largo) */}
+      <div className="mx-auto max-w-[30em] text-[0.9375rem] sm:text-base">
+        <Link to="/" className="touch-target mb-6 inline-flex items-center gap-1 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground">
+          <ChevronLeft className="size-4" />
+          Voltar ao app
+        </Link>
+        <article className="pb-10 leading-relaxed text-secondary-foreground [&_h2]:mt-8 [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-foreground [&_li]:mt-1.5 [&_li]:text-pretty [&_p]:mt-3 [&_p]:text-pretty [&_strong]:text-foreground [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5">
+          <h1 className="text-[1.75rem] leading-tight font-semibold tracking-tight text-foreground">{title}</h1>
+          <p className="!mt-2 text-sm text-muted-foreground">Atualizado em {formatDate(APP_INFO.legalUpdatedAt)}</p>
+          {children}
+        </article>
+      </div>
     </FocusLayout>
   )
 }
 
 const Contact = () => (
-  <a href={`mailto:${APP_INFO.contactEmail}`} className="text-primary underline-offset-4 hover:underline">
+  <a href={`mailto:${APP_INFO.contactEmail}`} className="text-link underline-offset-4 hover:underline">
     {APP_INFO.contactEmail}
   </a>
 )
@@ -52,7 +55,7 @@ export function PrivacyPage() {
         <li>
           <strong>Dados técnicos:</strong> o navegador guarda localmente a sua sessão e preferências do app (como o período escolhido no painel).
           Não usamos cookies de publicidade, rastreamento nem ferramentas de análise de terceiros. Detalhes na{' '}
-          <Link to="/cookies" className="text-primary underline-offset-4 hover:underline">
+          <Link to="/cookies" className="text-link underline-offset-4 hover:underline">
             Política de Cookies
           </Link>
           .
@@ -92,7 +95,7 @@ export function PrivacyPage() {
           href="https://developers.google.com/terms/api-services-user-data-policy"
           target="_blank"
           rel="noreferrer"
-          className="text-primary underline-offset-4 hover:underline"
+          className="text-link underline-offset-4 hover:underline"
         >
           Política de Dados do Usuário dos Serviços de API do Google
         </a>
@@ -178,7 +181,7 @@ export function CookiesPage() {
       <h2>Contato</h2>
       <p>
         Dúvidas: <Contact />. Veja também a{' '}
-        <Link to="/privacidade" className="text-primary underline-offset-4 hover:underline">
+        <Link to="/privacidade" className="text-link underline-offset-4 hover:underline">
           Política de Privacidade
         </Link>
         .
@@ -229,7 +232,7 @@ export function TermsPage() {
     <LegalPage title="Termos de Uso">
       <p>
         Ao criar uma conta no <strong>{APP_INFO.name}</strong>, você concorda com estes termos. Leia também a{' '}
-        <Link to="/privacidade" className="text-primary underline-offset-4 hover:underline">
+        <Link to="/privacidade" className="text-link underline-offset-4 hover:underline">
           Política de Privacidade
         </Link>
         .

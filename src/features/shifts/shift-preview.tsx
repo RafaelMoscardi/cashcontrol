@@ -51,7 +51,7 @@ export function ShiftPreview({ result, params, className }: ShiftPreviewProps) {
         className,
       )}
     >
-      <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Lucro da jornada</p>
+      <p className="text-sm text-secondary-foreground">Lucro da jornada</p>
       <p className="mt-1 text-[2rem] leading-none font-semibold tracking-tight">
         <Amount cents={result.profit} tone="result" />
       </p>

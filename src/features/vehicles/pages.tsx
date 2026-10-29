@@ -186,7 +186,6 @@ export function VehicleFormPage() {
     <>
       <PageHeader
         title={vehicle ? vehicle.name : 'Novo veículo'}
-        eyebrow={vehicle ? 'Editar veículo' : undefined}
         description={vehicle ? 'Mudanças valem para as próximas jornadas; as já registradas guardam os custos da época.' : undefined}
         backTo={done}
       />

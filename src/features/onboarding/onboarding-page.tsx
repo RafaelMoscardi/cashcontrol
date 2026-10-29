@@ -29,7 +29,7 @@ function Steps({ current }: { current: 1 | 2 }) {
             <span
               className={cn(
                 'grid size-6 place-items-center rounded-full border text-[0.6875rem] font-semibold',
-                step === current && 'border-primary bg-primary text-primary-foreground',
+                step === current && 'border-primary-strong bg-primary-strong text-primary-foreground',
                 done && 'border-primary/50 bg-primary/15 text-primary',
                 step > current && 'border-white/10',
               )}
@@ -183,9 +183,9 @@ export function OnboardingPage() {
     <FocusLayout wide>
       <Steps current={2} />
       <h1 className="text-[1.75rem] leading-tight font-semibold tracking-tight">Seu veículo</h1>
-      <p className="mt-1.5 mb-6 text-[0.9375rem] text-muted-foreground text-pretty">
+      <p className="mt-1.5 mb-6 max-w-[30em] text-[0.9375rem] text-muted-foreground text-pretty">
         Consumo, preço do combustível e custos do veículo. É daqui que sai o custo por km de cada jornada.{' '}
-        <button type="button" className="text-primary underline-offset-4 hover:underline" onClick={() => setBackToPlatforms(true)}>
+        <button type="button" className="touch-target text-link underline-offset-4 hover:underline" onClick={() => setBackToPlatforms(true)}>
           Voltar às plataformas
         </button>
       </p>
