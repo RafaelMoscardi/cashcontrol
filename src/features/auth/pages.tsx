@@ -47,6 +47,25 @@ function FormAlert({ message }: { message: string | null }) {
   )
 }
 
+const LEGAL_LINKS = [
+  { to: '/privacidade', label: 'Privacidade' },
+  { to: '/termos', label: 'Termos de uso' },
+  { to: '/cookies', label: 'Cookies' },
+  { to: '/seguranca', label: 'Segurança' },
+]
+
+function LegalLinks() {
+  return (
+    <nav aria-label="Informações legais" className="mt-6 flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs text-faint">
+      {LEGAL_LINKS.map((link) => (
+        <Link key={link.to} to={link.to} className="underline-offset-4 hover:text-muted-foreground hover:underline">
+          {link.label}
+        </Link>
+      ))}
+    </nav>
+  )
+}
+
 function SubmitButton({ pending, children }: { pending: boolean; children: React.ReactNode }) {
   return (
     <Button type="submit" size="lg" className="w-full" disabled={pending}>
@@ -112,6 +131,7 @@ export function LoginPage() {
           Criar conta grátis
         </Link>
       </p>
+      <LegalLinks />
     </FocusLayout>
   )
 }
@@ -180,6 +200,17 @@ export function SignupPage() {
         </FormField>
         <FormAlert message={error} />
         <SubmitButton pending={formState.isSubmitting}>Criar conta</SubmitButton>
+        <p className="text-center text-xs leading-relaxed text-muted-foreground text-pretty">
+          Ao criar a conta, você concorda com os{' '}
+          <Link to="/termos" className="text-foreground underline underline-offset-4">
+            Termos de uso
+          </Link>{' '}
+          e a{' '}
+          <Link to="/privacidade" className="text-foreground underline underline-offset-4">
+            Política de Privacidade
+          </Link>
+          .
+        </p>
       </form>
       <p className="mt-8 text-center text-sm text-muted-foreground">
         Já tem conta?{' '}

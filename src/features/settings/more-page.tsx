@@ -1,16 +1,39 @@
-import { Car, Check, ChevronRight, CircleQuestionMark, Download, LogOut, Share, Store, User } from 'lucide-react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  Car,
+  Check,
+  ChevronRight,
+  CircleQuestionMark,
+  Cookie,
+  Download,
+  FileText,
+  KeyRound,
+  LogOut,
+  MonitorSmartphone,
+  Share,
+  ShieldCheck,
+  Store,
+  User,
+} from 'lucide-react'
 import { useState } from 'react'
 import type * as React from 'react'
+import { useForm } from 'react-hook-form'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/app/confirm-dialog'
+import { FormField } from '@/components/app/form-field'
 import { PageHeader } from '@/components/app/page-header'
+import { PasswordInput } from '@/components/app/password-input'
 import { SectionCard } from '@/components/app/section-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Spinner } from '@/components/ui/spinner'
 import { useInstallPrompt } from '@/app/install-prompt'
 import { useAuth } from '@/features/auth/auth-context'
+import { resetSchema, type ResetValues } from '@/features/auth/schemas'
 import { useProfile, useUpdateProfile } from '@/features/profile/api'
 import { errorMessage } from '@/lib/errors'
+import { supabase } from '@/lib/supabase'
 
 function NavRow({ to, icon: Icon, label, description }: { to: string; icon: React.ComponentType<{ className?: string }>; label: string; description: string }) {
   return (
@@ -54,6 +77,72 @@ function InstallCard() {
       ) : (
         <p className="text-sm text-muted-foreground">No menu do navegador, escolha “Instalar app” ou “Adicionar à tela inicial”.</p>
       )}
+    </SectionCard>
+  )
+}
+
+function SecurityCard() {
+  const [changing, setChanging] = useState(false)
+  const { register, handleSubmit, reset, formState } = useForm<ResetValues>({
+    resolver: zodResolver(resetSchema),
+    defaultValues: { password: '', confirm: '' },
+  })
+
+  const changePassword = handleSubmit(async ({ password }) => {
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) return void toast.error(errorMessage(error))
+    toast.success('Senha alterada')
+    reset()
+    setChanging(false)
+  })
+
+  const signOutEverywhere = async () => {
+    const { error } = await supabase.auth.signOut({ scope: 'global' })
+    if (error) toast.error(errorMessage(error))
+    else toast.success('Você saiu de todos os aparelhos')
+  }
+
+  return (
+    <SectionCard title="Segurança da conta" icon={ShieldCheck}>
+      {changing ? (
+        <form onSubmit={changePassword} noValidate className="flex flex-col gap-3">
+          <FormField label="Nova senha" htmlFor="new-password" description="Pelo menos 8 caracteres, com letras e números." error={formState.errors.password?.message}>
+            <PasswordInput id="new-password" autoComplete="new-password" aria-invalid={!!formState.errors.password} {...register('password')} />
+          </FormField>
+          <FormField label="Repita a nova senha" htmlFor="confirm-password" error={formState.errors.confirm?.message}>
+            <PasswordInput id="confirm-password" autoComplete="new-password" aria-invalid={!!formState.errors.confirm} {...register('confirm')} />
+          </FormField>
+          <div className="flex gap-2">
+            <Button type="submit" disabled={formState.isSubmitting}>
+              {formState.isSubmitting && <Spinner data-icon="inline-start" />}
+              Salvar senha
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setChanging(false)}>
+              Cancelar
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button variant="outline" onClick={() => setChanging(true)}>
+            <KeyRound data-icon="inline-start" />
+            Trocar senha
+          </Button>
+          <ConfirmDialog
+            trigger={
+              <Button variant="outline">
+                <MonitorSmartphone data-icon="inline-start" />
+                Sair de todos os aparelhos
+              </Button>
+            }
+            title="Sair de todos os aparelhos?"
+            description="Você vai precisar entrar de novo em todos os celulares e computadores, inclusive neste. Use se perdeu um aparelho ou suspeita que alguém entrou na sua conta."
+            confirmLabel="Sair de todos"
+            onConfirm={() => void signOutEverywhere()}
+          />
+        </div>
+      )}
+      <p className="mt-3 text-xs text-muted-foreground">Entrou com o Google? Trocar senha cria uma senha para entrar também por e-mail.</p>
     </SectionCard>
   )
 }
@@ -109,6 +198,7 @@ export function MorePage() {
           <div className="mx-1 h-px bg-white/[0.06]" />
           <NavRow to="/plataformas" icon={Store} label="Plataformas" description="Uber, 99, iFood e outras" />
         </SectionCard>
+        <SecurityCard />
         <InstallCard />
         <SectionCard title="Como o lucro é calculado" icon={CircleQuestionMark}>
           <ul className="flex flex-col gap-2.5 text-sm text-muted-foreground">
@@ -126,6 +216,15 @@ export function MorePage() {
               <strong className="text-foreground">Lucro real</strong> = ganhos − combustível − reservas − despesas − custos fixos.
             </li>
           </ul>
+        </SectionCard>
+        <SectionCard>
+          <NavRow to="/privacidade" icon={ShieldCheck} label="Política de Privacidade" description="Quais dados guardamos e seus direitos (LGPD)" />
+          <div className="mx-1 h-px bg-white/[0.06]" />
+          <NavRow to="/termos" icon={FileText} label="Termos de uso" description="Regras de uso do CashControl" />
+          <div className="mx-1 h-px bg-white/[0.06]" />
+          <NavRow to="/cookies" icon={Cookie} label="Cookies" description="Só o essencial para manter você conectado" />
+          <div className="mx-1 h-px bg-white/[0.06]" />
+          <NavRow to="/seguranca" icon={ShieldCheck} label="Segurança" description="Como protegemos seus dados" />
         </SectionCard>
         <Button variant="outline" size="lg" className="text-negative" onClick={() => void signOut()}>
           <LogOut data-icon="inline-start" />

@@ -1,6 +1,7 @@
 import type * as React from 'react'
 import { Outlet, ScrollRestoration } from 'react-router'
 import { Logo } from '@/components/app/logo'
+import { CookieNotice } from '@/features/legal/cookie-notice'
 import { BottomNav, Sidebar } from './navigation'
 
 /** Telas logadas: barra lateral no desktop, barra inferior no celular. */
@@ -12,6 +13,7 @@ export function AppLayout() {
         <Outlet />
       </main>
       <BottomNav className="lg:hidden" />
+      <CookieNotice aboveNav />
       <ScrollRestoration />
     </div>
   )
@@ -25,6 +27,7 @@ export function FocusLayout({ children, wide = false }: { children: React.ReactN
         <Logo />
       </header>
       <main className={wide ? 'mx-auto w-full max-w-2xl' : 'mx-auto w-full max-w-sm'}>{children}</main>
+      <CookieNotice />
     </div>
   )
 }

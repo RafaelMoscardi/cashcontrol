@@ -15,6 +15,7 @@ const AUTH_MESSAGES: Record<string, string> = {
   refresh_token_not_found: 'Sua sessão expirou. Entre de novo.',
   bad_jwt: 'Sua sessão expirou. Entre de novo.',
   otp_expired: 'O link expirou ou já foi usado. Peça um novo.',
+  reauthentication_needed: 'Por segurança, saia e entre de novo antes de trocar a senha.',
   signup_disabled: 'Cadastros estão desativados no momento.',
 }
 

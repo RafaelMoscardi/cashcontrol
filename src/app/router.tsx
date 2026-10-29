@@ -21,6 +21,11 @@ export const router = createBrowserRouter([
         ],
       },
       { path: '/redefinir-senha', element: <ResetPasswordPage /> },
+      // Páginas públicas (exigidas pelo Google e pela LGPD), abertas logado ou não
+      { path: '/privacidade', lazy: async () => ({ Component: (await import('@/features/legal/pages')).PrivacyPage }) },
+      { path: '/termos', lazy: async () => ({ Component: (await import('@/features/legal/pages')).TermsPage }) },
+      { path: '/cookies', lazy: async () => ({ Component: (await import('@/features/legal/pages')).CookiesPage }) },
+      { path: '/seguranca', lazy: async () => ({ Component: (await import('@/features/legal/pages')).SecurityPage }) },
       {
         element: <RequireAuth />,
         children: [
