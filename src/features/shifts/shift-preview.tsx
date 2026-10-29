@@ -32,8 +32,11 @@ export function ShiftPreview({ result, params, className }: ShiftPreviewProps) {
   }
 
   const consumption = params ? estimateConsumption(params, result.distanceKm) : null
+  const meterKwh = params?.powertrain === 'electric' && params.measuredKwh ? params.measuredKwh : null
   const energyLabel =
-    consumption?.fuel != null && consumption.kwh != null
+    meterKwh !== null
+      ? `Energia do medidor (${formatNumber(meterKwh, 1)} kWh)`
+      : consumption?.fuel != null && consumption.kwh != null
       ? `Energia estimada (${formatNumber(consumption.fuel, 1)} ${fuelUnit(params?.fuelType ?? null)} + ${formatNumber(consumption.kwh, 1)} kWh)`
       : consumption?.kwh != null
         ? `Energia estimada (${formatNumber(consumption.kwh, 1)} kWh)`

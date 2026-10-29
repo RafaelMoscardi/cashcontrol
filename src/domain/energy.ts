@@ -1,5 +1,5 @@
-import { roundRate } from './money'
-import type { CostSnapshot, EnergyConfig, FuelType, Powertrain } from './types'
+import { roundRate, toCents, type Cents } from './money'
+import type { CostParams, CostSnapshot, EnergyConfig, FuelType, Powertrain } from './types'
 
 export const POWERTRAINS_WITH_FUEL: readonly Powertrain[] = ['combustion', 'hybrid', 'plugin_hybrid']
 export const POWERTRAINS_WITH_ELECTRICITY: readonly Powertrain[] = ['electric', 'plugin_hybrid']
@@ -65,6 +65,18 @@ export function estimateConsumption(cfg: EnergyConfig, distanceKm: number): Esti
     fuel: usesFuel(cfg.powertrain) && cfg.fuelKmPerUnit ? fuelKm / cfg.fuelKmPerUnit : null,
     kwh: usesElectricity(cfg.powertrain) && cfg.electricKmPerKwh ? electricKm / cfg.electricKmPerKwh : null,
   }
+}
+
+/**
+ * Energia exata de um elétrico com os kWh do medidor: kWh × preço do kWh. Sem medidor (ou fora
+ * do elétrico), null: vale a estimativa pelos km.
+ */
+export function measuredEnergyCost(params: CostParams | null | undefined): Cents | null {
+  if (params?.powertrain !== 'electric') return null
+  const kwh = params.measuredKwh
+  const price = params.electricityPricePerKwh
+  if (kwh == null || !(kwh > 0) || price == null || price < 0) return null
+  return toCents(kwh * price)
 }
 
 /** Monta a foto de custos de um veículo para gravar na jornada. */

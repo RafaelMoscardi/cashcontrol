@@ -1,9 +1,12 @@
 /* Resultado de uma jornada. Ver docs/ARQUITETURA.md §5.3. */
+import { measuredEnergyCost } from './energy'
 import { countsInOperationalResult } from './expenses'
 import { perKmToCents, safeDivide, sumCents, toCents, type Cents } from './money'
-import type { CostSnapshot, Expense, ExpenseCategory, ShiftEarning } from './types'
+import type { CostParams, CostSnapshot, Expense, ExpenseCategory, ShiftEarning } from './types'
 
 export interface ShiftFacts extends Omit<CostSnapshot, 'params'> {
+  /** Parâmetros da foto de custos; nos elétricos, podem trazer os kWh do medidor */
+  params?: CostParams | null
   startedAt: string | Date
   endedAt: string | Date
   breakMinutes: number
@@ -23,7 +26,7 @@ export interface ShiftResult {
   /** Receita total: líquido + gorjetas + bônus */
   revenue: Cents
   trips: number | null
-  /** Estimativa: km × custo de energia por km */
+  /** km × custo de energia por km; no elétrico com medidor, kWh × preço do kWh */
   energyCost: Cents
   /** Despesas que entram no resultado (todas, menos o combustível) */
   operationalExpenses: Cents
@@ -63,7 +66,7 @@ export function computeShift(f: ShiftFacts): ShiftResult {
   const revenue = platformNet + tips + bonus
   const trips = f.earnings.some((e) => e.trips !== null) ? f.earnings.reduce((n, e) => n + (e.trips ?? 0), 0) : null
 
-  const energyCost = perKmToCents(km, f.energyCostPerKm)
+  const energyCost = measuredEnergyCost(f.params) ?? perKmToCents(km, f.energyCostPerKm)
 
   const expensesByCategory: Partial<Record<ExpenseCategory, Cents>> = {}
   let operationalExpenses = 0

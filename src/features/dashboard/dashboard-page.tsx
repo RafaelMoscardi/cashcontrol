@@ -106,7 +106,7 @@ function OperationalCard({ s }: { s: PeriodSummary }) {
       icon={TrendingUp}
     >
       <Line label="Faturamento" value={s.revenue} sub={extras ? `plataformas ${formatMoney(s.platformNet)} · ${extras}` : undefined} />
-      <Line label="Combustível e energia (estimados pelos km)" value={s.energyCost} minus />
+      <Line label="Combustível e energia" value={s.energyCost} minus sub="Pelos km rodados ou pelo medidor do elétrico" />
       <Line label="Despesas operacionais" value={s.operationalExpenses} minus sub="Pedágio, manutenção, alimentação…" />
       <Line label="Lucro das jornadas" value={s.profitBeforeFixed} strong />
       <Line
@@ -143,7 +143,7 @@ export function DashboardPage() {
 
   const costItems = summary
     ? [
-        { label: 'Combustível e energia', cents: summary.energyCost, hint: 'estimado' },
+        { label: 'Combustível e energia', cents: summary.energyCost },
         { label: 'Despesas operacionais', cents: summary.operationalExpenses },
         { label: 'Custos fixos', cents: summary.fixedCosts.total, hint: `${summary.fixedCosts.days} d` },
       ]

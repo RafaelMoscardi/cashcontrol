@@ -16,6 +16,8 @@ export const shiftFormSchema = z
     breakMinutes: z.number().int().min(0, 'Não pode ser negativa').max(1439, 'Pausa longa demais'),
     odometerStart: z.number().min(0).max(9_999_999, 'Confira o hodômetro').nullable(),
     odometerEnd: z.number().min(0).max(9_999_999, 'Confira o hodômetro').nullable(),
+    /** Elétrico: kWh do medidor (opcional) */
+    energyKwh: z.number().gt(0, 'Precisa ser maior que zero').max(300, 'Mais de 300 kWh? Confira').nullable(),
     earnings: z
       .array(
         z.object({
@@ -89,6 +91,7 @@ export function newShiftForm(input: { workDate: ISODate; vehicleId: string; plat
     breakMinutes: 0,
     odometerStart: input.odometerStart,
     odometerEnd: null,
+    energyKwh: null,
     earnings: [{ platformId: input.platformId, amountCents: 0, tipsCents: 0, bonusCents: 0, trips: null }],
     expenses: [],
     notes: '',
@@ -106,6 +109,7 @@ export function shiftToForm(shift: Shift): ShiftFormValues {
     breakMinutes: shift.breakMinutes,
     odometerStart: shift.odometerStart,
     odometerEnd: shift.odometerEnd,
+    energyKwh: shift.params?.measuredKwh ?? null,
     earnings: shift.earnings.map((e) => ({
       platformId: e.platformId,
       amountCents: toCents(e.amount),
@@ -116,6 +120,12 @@ export function shiftToForm(shift: Shift): ShiftFormValues {
     expenses: shift.expenses.map((x) => ({ category: x.category, amountCents: toCents(x.amount), description: x.description ?? '' })),
     notes: shift.notes ?? '',
   }
+}
+
+/** Nos elétricos, os kWh do medidor vão junto na foto de custos da jornada (em branco, vale a estimativa). */
+export function withMeterReading(snapshot: CostSnapshot, energyKwh: number | null): CostSnapshot {
+  if (snapshot.params?.powertrain !== 'electric') return snapshot
+  return { ...snapshot, params: { ...snapshot.params, measuredKwh: energyKwh } }
 }
 
 /** Fatos para a prévia ao vivo; null enquanto faltam horário ou hodômetro válidos. */
@@ -131,6 +141,7 @@ export function toShiftFacts(v: ShiftFormValues, snapshot: CostSnapshot | null):
     odometerStart: start,
     odometerEnd: end,
     energyCostPerKm: snapshot.energyCostPerKm,
+    params: snapshot.params,
     earnings: v.earnings.map((e) => ({
       platformId: e.platformId,
       amount: e.amountCents / 100,

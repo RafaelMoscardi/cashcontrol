@@ -49,6 +49,27 @@ describe('jornada', () => {
     expect(r.paidExpenses).toBe(25_000)
   })
 
+  it('elétrico com os kWh do medidor usa kWh × preço do kWh no lugar da estimativa pelos km', () => {
+    const electric = {
+      vehicleName: 'Dolphin',
+      powertrain: 'electric' as const,
+      fuelType: null,
+      fuelKmPerUnit: null,
+      fuelPricePerUnit: null,
+      electricKmPerKwh: 6.5,
+      electricityPricePerKwh: 1.15,
+      electricSharePct: null,
+    }
+    const estimated = computeShift({ ...BASE, energyCostPerKm: 0.17692, params: electric })
+    expect(estimated.energyCost).toBe(2_123) // 120 km × 0,17692
+    const measured = computeShift({ ...BASE, energyCostPerKm: 0.17692, params: { ...electric, measuredKwh: 35.7 } })
+    expect(measured.energyCost).toBe(4_106) // 35,7 kWh × 1,15 = 41,055
+    expect(measured.profit).toBe(30_000 - 4_106)
+    // kWh do medidor só valem no elétrico
+    const combustion = computeShift({ ...BASE, params: { ...electric, powertrain: 'combustion', measuredKwh: 35.7 } })
+    expect(combustion.energyCost).toBe(6_000)
+  })
+
   it('pedágio, estacionamento e alimentação reduzem o lucro e o caixa uma vez cada', () => {
     const r = computeShift({
       ...BASE,

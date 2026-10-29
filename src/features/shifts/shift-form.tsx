@@ -3,7 +3,7 @@ import { CalendarClock, ChevronDown, Gauge, Plus, Receipt, RefreshCw, Trash, Wal
 import { useEffect, useMemo, useState } from 'react'
 import type * as React from 'react'
 import { Controller, useFieldArray, useForm, useWatch, type Control, type UseFormRegister } from 'react-hook-form'
-import { IntegerInput } from '@/components/app/decimal-input'
+import { DecimalInput, IntegerInput } from '@/components/app/decimal-input'
 import { FormField } from '@/components/app/form-field'
 import { MoneyInput } from '@/components/app/money-input'
 import { SectionCard } from '@/components/app/section-card'
@@ -21,7 +21,7 @@ import { reportInvalid } from '@/lib/form-errors'
 import { cn } from '@/lib/utils'
 import { useLastOdometer } from './api'
 import { EXPENSE_ICON, EXPENSE_LABEL, EXPENSE_NOTE } from './labels'
-import { shiftFormSchema, toShiftFacts, type ShiftFormValues } from './schema'
+import { shiftFormSchema, toShiftFacts, withMeterReading, type ShiftFormValues } from './schema'
 import { ShiftPreview } from './shift-preview'
 
 const BREAK_PRESETS = [0, 15, 30, 60]
@@ -68,10 +68,13 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
     [keepsOriginal, original, vehicle],
   )
   const current = safeSnapshot(vehicle)
+  // Elétrico com medidor: os kWh digitados entram na foto de custos da jornada
+  const effective = useMemo(() => (snapshot ? withMeterReading(snapshot, values.energyKwh ?? null) : null), [snapshot, values.energyKwh])
   const result = useMemo(() => {
-    const facts = toShiftFacts(values, snapshot)
+    const facts = toShiftFacts(values, effective)
     return facts ? computeShift(facts) : null
-  }, [values, snapshot])
+  }, [values, effective])
+  const kwhPrice = snapshot?.params?.powertrain === 'electric' ? snapshot.params.electricityPricePerKwh : undefined
 
   // Nova jornada: hodômetro inicial = onde a última jornada deste veículo terminou
   const lastOdometer = useLastOdometer(original ? undefined : values.vehicleId)
@@ -86,7 +89,7 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
 
   const submit = handleSubmit(async (valid) => {
     if (!snapshot) return
-    await onSubmit(valid as ShiftFormValues, snapshot)
+    await onSubmit(valid as ShiftFormValues, withMeterReading(snapshot, valid.energyKwh ?? null))
   }, reportInvalid)
 
   return (
@@ -211,6 +214,33 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
                 )}
               />
             </div>
+            {kwhPrice !== undefined && (
+              <Controller
+                control={control}
+                name="energyKwh"
+                render={({ field }) => (
+                  <FormField
+                    label="Energia gasta (opcional)"
+                    htmlFor="energyKwh"
+                    description={`Se o carro ou o carregador mostra quanto gastou, digite aqui. O app usa esse valor, ${
+                      kwhPrice === null ? 'com o preço do kWh do cadastro' : `a ${formatReais(kwhPrice)} o kWh do cadastro`
+                    }, no lugar da estimativa pelos km.`}
+                    error={errors.energyKwh?.message}
+                  >
+                    <DecimalInput
+                      id="energyKwh"
+                      value={field.value ?? null}
+                      onValueChange={field.onChange}
+                      onBlur={field.onBlur}
+                      suffix="kWh"
+                      placeholder="0,0"
+                      maxFractionDigits={1}
+                      aria-invalid={!!errors.energyKwh}
+                    />
+                  </FormField>
+                )}
+              />
+            )}
             {original && (
               <div className="rounded-xl bg-white/[0.03] px-3.5 py-3 text-[0.8125rem] text-muted-foreground">
                 {keepsOriginal ? (
@@ -309,7 +339,7 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
       </div>
 
       <div className="flex flex-col gap-4 lg:sticky lg:top-6">
-        <ShiftPreview result={result} params={snapshot?.params ?? null} />
+        <ShiftPreview result={result} params={effective?.params ?? null} />
         <Button type="submit" size="lg" disabled={formState.isSubmitting || !snapshot} className="w-full">
           {formState.isSubmitting && <Spinner data-icon="inline-start" />}
           {original ? 'Salvar alterações' : 'Salvar jornada'}

@@ -142,6 +142,7 @@ km                 = hodômetro final − hodômetro inicial
 horas trabalhadas  = (fim − início) − pausa
 receita            = Σ (líquido + gorjetas + bônus) das plataformas
 energia estimada   = km × custo de energia por km
+                     (elétrico com os kWh do medidor: kWh × preço do kWh, guardados na foto de custos)
 despesas operac.   = Σ despesas da jornada exceto combustível
 lucro da jornada   = receita − energia − despesas operacionais
 custo por km       = (energia + despesas operacionais) ÷ km

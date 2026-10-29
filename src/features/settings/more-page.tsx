@@ -206,7 +206,8 @@ export function MorePage() {
               <strong className="text-foreground">Ganhos:</strong> o valor líquido que a plataforma pagou. A taxa dela nunca é descontada de novo.
             </li>
             <li>
-              <strong className="text-foreground">Combustível:</strong> estimado pelos km rodados. O abastecimento pago aparece no fluxo de caixa, sem contar duas vezes.
+              <strong className="text-foreground">Combustível:</strong> estimado pelos km rodados. O abastecimento pago aparece no fluxo de caixa, sem contar duas vezes. No
+              elétrico, dá para informar os kWh do medidor na jornada.
             </li>
             <li>
               <strong className="text-foreground">Despesas:</strong> pedágio, manutenção, alimentação e as outras saem do lucro do dia em que você lança.
