@@ -1,0 +1,5 @@
+# Regras da Cloudflare Pages (https://developers.cloudflare.com/pages/configuration/redirects/)
+
+# Verificação do Google Search Console: o endereço com .html precisa responder 200 direto.
+# Sem esta regra, a Cloudflare redireciona /arquivo.html para /arquivo (308).
+/googlea54dc3d2f8ea48a9.html /googlea54dc3d2f8ea48a9 200
