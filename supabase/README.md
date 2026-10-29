@@ -9,3 +9,17 @@
 2. Toda tabela nova leva `enable row level security`, políticas com `(select auth.uid())` e `grant` explícito para `authenticated`. O projeto não expõe tabelas novas automaticamente.
 3. Não rode no **SQL Editor** o que já está numa migration: a integração rodaria de novo e o deploy falharia.
 4. Antes de enviar, rode `npm test`: as migrations são aplicadas do zero nos testes.
+
+## Aplicar pelo SQL Editor (caminho manual)
+
+Se a integração não aplicar uma migration (foi o caso da primeira, em 29/10/2026), rode no **SQL Editor** o conteúdo da migration **seguido** do registro no histórico, trocando versão e nome. Assim a integração não a aplica de novo:
+
+```sql
+create schema if not exists supabase_migrations;
+create table if not exists supabase_migrations.schema_migrations (version text not null primary key);
+alter table supabase_migrations.schema_migrations add column if not exists statements text[];
+alter table supabase_migrations.schema_migrations add column if not exists name text;
+insert into supabase_migrations.schema_migrations (version, name)
+values ('20261025120000', 'initial_schema')
+on conflict (version) do nothing;
+```
