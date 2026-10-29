@@ -20,7 +20,8 @@
     "test:watch": "vitest",
     "check": "npm run typecheck && npm run lint && npm run test",
     "icons": "node scripts/icons/generate.ts",
-    "catalogo:fipe": "node scripts/fipe/gerar-catalogo.ts"
+    "catalogo:fipe": "node scripts/fipe/gerar-catalogo.ts",
+    "consumo:inmetro": "node scripts/inmetro/gerar-consumo.ts"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.11",

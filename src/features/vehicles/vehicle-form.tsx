@@ -20,6 +20,8 @@ import type { FuelType, Ownership, Powertrain, VehicleKind } from '@/domain/type
 import { formatReais } from '@/lib/format'
 import { reportInvalid } from '@/lib/form-errors'
 import { brandGroups, isCatalogBrand, isCatalogModel, modelsOf } from './catalog'
+import { inmetroOptions } from './consumption'
+import { ConsumptionSuggestions } from './consumption-suggestions'
 import { FUEL_LABEL, OWNERSHIP_LABEL, POWERTRAIN_DESCRIPTION, POWERTRAIN_LABEL } from './labels'
 import { vehicleFormSchema, type VehicleFormValues } from './schema'
 
@@ -413,6 +415,18 @@ export function VehicleForm({ defaultValues, onSubmit, submitLabel, secondaryAct
               )}
             </div>
           )}
+
+          <ConsumptionSuggestions
+            options={kind === 'car' && brand && model ? inmetroOptions(brand, model, powertrain, fuelType) : []}
+            current={powertrain === 'electric' ? values.electricKmPerKwh : values.fuelKmPerUnit}
+            fuelLabel={`com ${FUEL_LABEL[fuelType].toLowerCase()}`}
+            onPick={(value) =>
+              setValue(powertrain === 'electric' ? 'electricKmPerKwh' : 'fuelKmPerUnit', value, {
+                shouldDirty: true,
+                shouldValidate: formState.isSubmitted,
+              })
+            }
+          />
 
           <ResultLine label="Custo de energia" value={energyPerKm === null ? 'preencha consumo e preço' : `${formatReais(energyPerKm, 4)}/km`} />
         </div>
