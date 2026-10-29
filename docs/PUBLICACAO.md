@@ -129,7 +129,30 @@ A tela do Google vai mostrar "continuar para wgblvqkyybibnuntmkaj.supabase.co". 
 
 ## 6. E-mails (recuperação de senha e confirmação de cadastro)
 
-O envio padrão do Supabase só entrega para os e-mails da equipe do projeto (cerca de 2 por hora). Para qualquer usuário receber, ligue um SMTP próprio. Sugestão gratuita: **Brevo** (300 e-mails por dia no plano grátis).
+O envio padrão do Supabase só entrega para os e-mails da equipe do projeto (cerca de 2 por hora). Para qualquer usuário receber, ligue um SMTP próprio.
+
+### Sem domínio (para começar): Gmail
+
+Os e-mails saem do seu Gmail, pelos servidores do Google, e chegam bem na caixa de entrada. Uma conta pessoal envia cerca de 500 e-mails por dia (pode ser menos via SMTP): sobra enquanto o app é pequeno. Eles ficam na sua pasta *Enviados*.
+
+1. Na conta Google, ligue a **Verificação em duas etapas** ([myaccount.google.com/security](https://myaccount.google.com/security)).
+2. Crie uma **senha de app** em [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) com o nome `Supabase CashControl`. Copie as 16 letras (aparecem uma vez só). Ela é sigilosa: só vai no Supabase.
+3. No Supabase: **Authentication → Emails → SMTP Settings** → ligue *Custom SMTP*:
+
+   | Campo | Valor |
+   | --- | --- |
+   | Sender email | o seu Gmail |
+   | Sender name | `CashControl` |
+   | Host | `smtp.gmail.com` |
+   | Port | `465` (se der erro, `587`) |
+   | Username | o seu Gmail completo |
+   | Password | a senha de app, sem espaços |
+
+4. Siga nos passos 5 e 6 abaixo (limite por hora e modelos em português).
+
+### Com domínio próprio: Brevo
+
+Quando o app crescer, troque para um domínio seu e o **Brevo** (300 e-mails por dia no plano grátis).
 
 1. **Domínio (recomendado):** com um domínio seu (ex.: `cashcontrol.com.br`, cerca de R$ 40/ano no registro.br), os e-mails saem de `nao-responda@seudominio` e não caem no spam. Sem domínio, o Brevo troca o remetente por um endereço dele ou o Gmail barra a mensagem.
 2. No Brevo: crie a conta grátis → **Senders, Domains & Dedicated IPs → Domains** → adicione e autentique o domínio (registros DNS; se o domínio estiver na Cloudflare, é colar os registros lá).
