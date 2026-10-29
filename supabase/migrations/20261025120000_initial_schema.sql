@@ -373,6 +373,8 @@ create policy "expenses: dono apaga" on public.expenses
   for delete to authenticated using ((select auth.uid()) = user_id);
 
 -- Privilégios: anônimo não acessa nada; o perfil é criado só pelo gatilho.
+-- Tudo explícito, sem depender do "expor tabelas novas automaticamente" do Supabase.
+grant usage on schema public to authenticated;
 revoke all on table
   public.profiles, public.vehicles, public.platforms, public.shifts, public.shift_earnings, public.expenses
   from anon;
