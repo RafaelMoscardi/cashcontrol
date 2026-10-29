@@ -81,7 +81,6 @@ export function ShiftPreview({ result, params, className }: ShiftPreviewProps) {
         <Row label="Recebido das plataformas" value={formatMoney(result.platformNet)} />
         {extras > 0 && <Row label="Gorjetas e bônus" value={formatMoney(extras)} />}
         <Row label={energyLabel} value={`−${formatMoney(result.energyCost)}`} muted />
-        <Row label="Reservas (manutenção, pneus, depreciação)" value={`−${formatMoney(result.reserves)}`} muted />
         {result.operationalExpenses > 0 && <Row label="Despesas da jornada" value={`−${formatMoney(result.operationalExpenses)}`} muted />}
         <Row label="Lucro da jornada" value={<Amount cents={result.profit} tone="result" />} strong />
       </div>
@@ -92,9 +91,9 @@ export function ShiftPreview({ result, params, className }: ShiftPreviewProps) {
             <span>Caixa da jornada (recebido − pago)</span>
             <Amount cents={cash} tone="result" className="font-medium" />
           </div>
-          {(result.paidEnergy > 0 || result.paidMaintenance > 0) && (
+          {result.paidEnergy > 0 && (
             <p className="mt-1.5 leading-snug">
-              Abastecimento e manutenção pagos saem do caixa, mas não do lucro: ele já desconta a estimativa por km.
+              O abastecimento pago sai do caixa, mas não do lucro: ele já desconta a estimativa de combustível pelos km.
             </p>
           )}
         </div>

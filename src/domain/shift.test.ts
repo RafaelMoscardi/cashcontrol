@@ -12,9 +12,6 @@ const BASE: ShiftFacts = {
   odometerStart: 45_000,
   odometerEnd: 45_120,
   energyCostPerKm: 0.5, // 12 km/l a R$ 6,00
-  maintenancePerKm: 0.1,
-  tiresPerKm: 0,
-  depreciationPerKm: 0,
   earnings: [{ platformId: 'uber', amount: 300, tips: 0, bonus: 0, trips: 18 }],
   expenses: [],
 }
@@ -26,29 +23,28 @@ describe('jornada', () => {
     expect(r.workedMinutes).toBe(540)
     expect(r.revenue).toBe(30_000)
     expect(r.energyCost).toBe(6_000)
-    expect(r.maintenanceReserve).toBe(1_200)
-    expect(r.reserves).toBe(1_200)
-    expect(r.variableCosts).toBe(7_200)
-    expect(r.profit).toBe(22_800)
-    expect(r.profitPerHour).toBeCloseTo(25.3333, 4)
+    expect(r.variableCosts).toBe(6_000)
+    expect(r.profit).toBe(24_000)
+    expect(r.profitPerHour).toBeCloseTo(26.6667, 4)
     expect(r.revenuePerHour).toBeCloseTo(33.3333, 4)
-    expect(r.costPerKm).toBeCloseTo(0.6, 10)
+    expect(r.costPerKm).toBeCloseTo(0.5, 10)
     expect(r.revenuePerKm).toBeCloseTo(2.5, 10)
-    expect(r.profitPerKm).toBeCloseTo(1.9, 10)
+    expect(r.profitPerKm).toBeCloseTo(2, 10)
     expect(r.trips).toBe(18)
   })
 
   it('abastecimento pago vai para o caixa e nunca soma com a estimativa de combustível', () => {
     const r = computeShift({ ...BASE, expenses: [{ category: 'fuel', amount: 100 }] })
-    expect(r.profit).toBe(22_800)
+    expect(r.profit).toBe(24_000)
     expect(r.operationalExpenses).toBe(0)
     expect(r.paidEnergy).toBe(10_000)
     expect(r.paidExpenses).toBe(10_000)
   })
 
-  it('manutenção paga sai da reserva por km, não do lucro', () => {
+  it('manutenção paga sai do lucro e do caixa no dia em que é paga', () => {
     const r = computeShift({ ...BASE, expenses: [{ category: 'maintenance', amount: 250 }] })
-    expect(r.profit).toBe(22_800)
+    expect(r.operationalExpenses).toBe(25_000)
+    expect(r.profit).toBe(24_000 - 25_000)
     expect(r.paidMaintenance).toBe(25_000)
     expect(r.paidExpenses).toBe(25_000)
   })
@@ -64,7 +60,7 @@ describe('jornada', () => {
     })
     expect(r.operationalExpenses).toBe(4_590)
     expect(r.paidExpenses).toBe(4_590)
-    expect(r.profit).toBe(22_800 - 4_590)
+    expect(r.profit).toBe(24_000 - 4_590)
     expect(r.expensesByCategory).toEqual({ toll: 1_240, parking: 800, food: 2_550 })
   })
 
@@ -84,9 +80,10 @@ describe('jornada', () => {
         { category: 'other', amount: 10 },
       ],
     })
-    expect(all.operationalExpenses).toBe(8 * 1_000)
-    expect(all.paidExpenses).toBe(8_000 + 20_000)
-    expect(all.profit).toBe(all.revenue - all.energyCost - all.reserves - all.operationalExpenses)
+    // tudo menos o combustível: manutenção 120 + 8 categorias de 10
+    expect(all.operationalExpenses).toBe(12_000 + 8 * 1_000)
+    expect(all.paidExpenses).toBe(8_000 + 12_000 + 8 * 1_000)
+    expect(all.profit).toBe(all.revenue - all.energyCost - all.operationalExpenses)
   })
 
   it('gorjetas e bônus são receita; a taxa da plataforma nunca é descontada de novo', () => {
@@ -101,17 +98,8 @@ describe('jornada', () => {
     expect(r.tips).toBe(1_200)
     expect(r.bonus).toBe(3_000)
     expect(r.revenue).toBe(34_200)
-    expect(r.profit).toBe(34_200 - 7_200)
+    expect(r.profit).toBe(34_200 - 6_000)
     expect(r.trips).toBe(14)
-  })
-
-  it('reservas de pneus e depreciação somam à de manutenção, cada uma arredondada', () => {
-    const r = computeShift({ ...BASE, odometerEnd: 45_087.3, maintenancePerKm: 0.12, tiresPerKm: 0.035, depreciationPerKm: 0.0825 })
-    expect(r.distanceKm).toBe(87.3)
-    expect(r.maintenanceReserve).toBe(1_048) // 10,476
-    expect(r.tiresReserve).toBe(306) // 3,0555
-    expect(r.depreciationReserve).toBe(720) // 7,20225
-    expect(r.reserves).toBe(1_048 + 306 + 720)
   })
 
   it('jornada que vira a meia-noite conta as horas certas', () => {

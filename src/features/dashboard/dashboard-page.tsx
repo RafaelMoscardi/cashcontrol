@@ -102,19 +102,18 @@ function OperationalCard({ s }: { s: PeriodSummary }) {
   return (
     <SectionCard
       title="Resultado operacional"
-      description="Quanto a operação gerou, já descontado o desgaste do veículo e os custos fixos."
+      description="Quanto a operação gerou, já descontados o combustível, as despesas e os custos fixos."
       icon={TrendingUp}
     >
       <Line label="Faturamento" value={s.revenue} sub={extras ? `plataformas ${formatMoney(s.platformNet)} · ${extras}` : undefined} />
       <Line label="Combustível e energia (estimados pelos km)" value={s.energyCost} minus />
-      <Line label="Reservas de manutenção, pneus e depreciação" value={s.reserves} minus />
-      <Line label="Despesas operacionais" value={s.operationalExpenses} minus sub="Pedágio, estacionamento, alimentação…" />
+      <Line label="Despesas operacionais" value={s.operationalExpenses} minus sub="Pedágio, manutenção, alimentação…" />
       <Line label="Lucro das jornadas" value={s.profitBeforeFixed} strong />
       <Line
         label="Custos fixos"
         value={s.fixedCosts.total}
         minus
-        sub={`Aluguel, seguro, IPVA… proporcionais a ${s.fixedCosts.days} ${s.fixedCosts.days === 1 ? 'dia' : 'dias'}`}
+        sub={`Aluguel, parcela, seguro, IPVA… proporcionais a ${s.fixedCosts.days} ${s.fixedCosts.days === 1 ? 'dia' : 'dias'}`}
       />
       <Line label="Lucro real" value={s.operationalResult} strong />
     </SectionCard>
@@ -129,12 +128,6 @@ function CashCard({ s }: { s: PeriodSummary }) {
       <Line label="Manutenções pagas" value={s.cash.paidMaintenance} minus />
       <Line label="Outras despesas pagas" value={s.cash.paidOperational} minus />
       <Line label="Saldo do período" value={s.cash.net} strong />
-      {s.reserves > 0 && (
-        <div className="mt-3 rounded-xl bg-primary/10 px-3.5 py-3 text-[0.8125rem] leading-snug">
-          <span className="font-medium text-foreground">Separe {formatMoney(s.reserves)}</span>{' '}
-          <span className="text-muted-foreground">para manutenção, pneus e troca do veículo. Esse valor já foi descontado do lucro real.</span>
-        </div>
-      )}
       <p className="mt-3 text-xs text-faint">Pagamentos de aluguel, seguro e parcelas ainda não são lançados no caixa.</p>
     </SectionCard>
   )
@@ -151,7 +144,6 @@ export function DashboardPage() {
   const costItems = summary
     ? [
         { label: 'Combustível e energia', cents: summary.energyCost, hint: 'estimado' },
-        { label: 'Reservas por km', cents: summary.reserves },
         { label: 'Despesas operacionais', cents: summary.operationalExpenses },
         { label: 'Custos fixos', cents: summary.fixedCosts.total, hint: `${summary.fixedCosts.days} d` },
       ]

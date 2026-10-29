@@ -37,8 +37,9 @@ React 19 · TypeScript · Vite 8 · Tailwind CSS 4 · shadcn/ui · Recharts · T
 ## Regras que o app garante
 
 - Ganho lançado é o **líquido** que a plataforma pagou: a taxa dela nunca é descontada de novo.
-- Combustível e desgaste entram no lucro pela **estimativa por km**; abastecimentos e manutenções pagos entram só no **fluxo de caixa**. Nada conta duas vezes.
-- Custos fixos (aluguel, seguro, IPVA) são rateados pelos dias do período; um mês completo soma exatamente o valor mensal.
+- O combustível entra no lucro pela **estimativa por km**; o abastecimento pago entra só no **fluxo de caixa**. Nada conta duas vezes.
+- Manutenção, pedágio e as outras despesas saem do lucro do dia em que são lançadas.
+- Custos fixos (aluguel, parcela do financiamento, seguro, IPVA) são rateados pelos dias do período; um mês completo soma exatamente o valor mensal.
 - Cada jornada guarda a "foto" dos custos do dia: mudar o preço do combustível não reescreve o passado.
 - O banco recusa jornadas com horário ou hodômetro sobrepostos e isola os dados de cada usuário (RLS).
 

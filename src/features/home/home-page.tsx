@@ -18,7 +18,6 @@ const EXAMPLE = {
   ],
   costs: [
     { label: 'Combustível', detail: '210\u00a0km a R$\u00a00,52 por\u00a0km', cents: 10920, color: 'var(--chart-3)' },
-    { label: 'Reservas', detail: 'manutenção, pneus e depreciação', cents: 3780, color: 'var(--chart-4)' },
     { label: 'Despesas da jornada', detail: 'lavagem e estacionamento', cents: 1500, color: 'var(--chart-5)' },
     { label: 'Custos fixos do dia', detail: 'seguro e IPVA', cents: 1800, color: 'var(--chart-6)' },
   ],
@@ -34,8 +33,8 @@ const FEATURES = [
     text: 'Carro ou moto, a combustão, híbrido ou elétrico. O custo sai do consumo e do preço que você informa.',
   },
   {
-    title: 'Reserva para o desgaste',
-    text: 'Manutenção, pneus e depreciação separados por km rodado, antes de a conta chegar.',
+    title: 'Despesas do dia na conta',
+    text: 'Pedágio, manutenção, alimentação: o que você paga na jornada sai do lucro daquele dia.',
   },
   {
     title: 'Custos fixos no dia certo',
@@ -162,8 +161,8 @@ export function HomePage() {
                 Rodou o dia todo. Quanto sobrou de verdade?
               </h1>
               <p className="mt-5 max-w-[34em] text-[1.0625rem] leading-relaxed text-secondary-foreground text-pretty sm:text-lg">
-                O CashControl desconta do que Uber, 99, iFood e as outras plataformas pagaram o combustível ou a energia, o desgaste do
-                veículo e os custos fixos. Você vê o lucro real de cada jornada, por hora e por km.
+                O CashControl desconta do que Uber, 99, iFood e as outras plataformas pagaram o combustível ou a energia, as despesas do
+                dia e os custos fixos. Você vê o lucro real de cada jornada, por hora e por km.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button asChild size="lg">

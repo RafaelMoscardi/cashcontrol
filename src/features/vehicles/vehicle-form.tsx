@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { BatteryCharging, Bike, Car, CarFront, Fuel, Gauge, Leaf, List, PencilLine, PlugZap, Wallet, Wrench } from 'lucide-react'
+import { BatteryCharging, Bike, Car, CarFront, Fuel, Gauge, Leaf, List, PencilLine, PlugZap, Wallet } from 'lucide-react'
 import { useRef, useState } from 'react'
 import type * as React from 'react'
 import { Controller, useForm, useWatch, type Control } from 'react-hook-form'
@@ -142,10 +142,10 @@ export function VehicleForm({ defaultValues, onSubmit, submitLabel, secondaryAct
   } catch {
     energyPerKm = null
   }
-  const reservesPerKm = (values.maintenancePerKm ?? 0) + (values.tiresPerKm ?? 0) + (ownership === 'rented' ? 0 : (values.depreciationPerKm ?? 0))
   const monthly = monthlyFixedCost({
     rentAmount: ownership === 'rented' ? values.rentCents / 100 : 0,
     rentPeriod: values.rentPeriod,
+    financingMonthly: ownership === 'financed' ? values.financingCents / 100 : 0,
     insuranceMonthly: values.insuranceCents / 100,
     taxesYearly: values.taxesYearlyCents / 100,
     otherFixedMonthly: values.otherFixedCents / 100,
@@ -433,39 +433,6 @@ export function VehicleForm({ defaultValues, onSubmit, submitLabel, secondaryAct
       </SectionCard>
 
       <SectionCard
-        title="Reservas por km"
-        description="Quanto separar a cada km para o desgaste. Entra no lucro real; quando você paga a manutenção, o dinheiro sai daqui."
-        icon={Wrench}
-      >
-        <div className="grid gap-4 sm:grid-cols-3">
-          <PerKmField
-            control={control}
-            name="maintenancePerKm"
-            label="Manutenção"
-            description="Revisões, óleo, freios. Ex.: R$ 900 a cada 10.000 km = R$ 0,09."
-            error={errors.maintenancePerKm?.message}
-          />
-          <PerKmField
-            control={control}
-            name="tiresPerKm"
-            label="Pneus"
-            description="Ex.: jogo de R$ 1.600 que dura 40.000 km = R$ 0,04."
-            error={errors.tiresPerKm?.message}
-          />
-          {ownership !== 'rented' && (
-            <PerKmField
-              control={control}
-              name="depreciationPerKm"
-              label="Depreciação"
-              description="Quanto o veículo perde de valor por km. Ex.: R$ 12.000 em 100.000 km = R$ 0,12."
-              error={errors.depreciationPerKm?.message}
-            />
-          )}
-        </div>
-        <ResultLine className="mt-4" label="Reserva total" value={`${formatReais(reservesPerKm, 4)}/km`} />
-      </SectionCard>
-
-      <SectionCard
         title="Custos fixos"
         description="Valores que você paga trabalhando ou não. Entram no lucro real divididos pelos dias."
         icon={Wallet}
@@ -510,7 +477,7 @@ export function VehicleForm({ defaultValues, onSubmit, submitLabel, secondaryAct
               control={control}
               name="financingCents"
               label="Parcela do financiamento (por mês)"
-              description="Só entra no fluxo de caixa: no lucro real, o desgaste do veículo já está na depreciação."
+              description="Entra nos custos fixos, como o aluguel."
               error={errors.financingCents?.message}
             />
           )}
@@ -560,38 +527,7 @@ function ResultLine({ label, value, className }: { label: string; value: string;
   )
 }
 
-type PerKmName = 'maintenancePerKm' | 'tiresPerKm' | 'depreciationPerKm'
 type MoneyName = 'rentCents' | 'insuranceCents' | 'taxesYearlyCents' | 'otherFixedCents' | 'financingCents'
-
-function PerKmField(props: {
-  control: Control<VehicleFormValues>
-  name: PerKmName
-  label: string
-  description: string
-  error?: string
-}) {
-  return (
-    <Controller
-      control={props.control}
-      name={props.name}
-      render={({ field }) => (
-        <FormField label={props.label} htmlFor={props.name} description={props.description} error={props.error}>
-          <DecimalInput
-            id={props.name}
-            value={field.value}
-            onValueChange={field.onChange}
-            onBlur={field.onBlur}
-            prefix="R$"
-            suffix="/km"
-            placeholder="0,00"
-            maxFractionDigits={4}
-            aria-invalid={!!props.error}
-          />
-        </FormField>
-      )}
-    />
-  )
-}
 
 function MoneyField(props: {
   control: Control<VehicleFormValues>

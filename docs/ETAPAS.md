@@ -31,7 +31,7 @@ Cadastro, veículo, jornada e painel com dados reais.
 **Escopo**
 1. Cadastro, login, logout, recuperação e redefinição de senha.
 2. Primeiro acesso: escolher plataformas e cadastrar o primeiro veículo.
-3. Veículos: criar, editar, arquivar; combustão (gasolina, etanol, diesel, GNV), híbrido, híbrido plug-in, elétrico; reservas por km; custos fixos.
+3. Veículos: criar, editar, arquivar; combustão (gasolina, etanol, diesel, GNV), híbrido, híbrido plug-in, elétrico; custos fixos.
 4. Jornada: data, início, fim, pausa, hodômetro, ganhos por plataforma (líquido, gorjetas, bônus, corridas), despesas; cálculo ao vivo antes de salvar.
 5. Histórico de jornadas com edição e exclusão.
 6. Painel: filtro de período (hoje, semana, mês, mês anterior, datas personalizadas), indicadores, resultado operacional separado do fluxo de caixa, gráficos de receita × lucro por dia, receita por plataforma e composição de custos.
@@ -40,7 +40,7 @@ Cadastro, veículo, jornada e painel com dados reais.
 - [x] Criar conta, sair, entrar de novo e redefinir a senha pelo link de recuperação.
 - [x] Um usuário novo é levado ao primeiro acesso e não chega ao painel sem veículo.
 - [x] O formulário de veículo só pede os campos da motorização escolhida e recusa valores impossíveis (consumo zero, preço negativo).
-- [x] Jornada de 08:00 às 18:00 com 1 h de pausa, 120 km, R$ 300 líquidos, carro a 12 km/l e R$ 6,00/l, reserva de R$ 0,10/km: mostra 9 h, energia R$ 60,00, reservas R$ 12,00, lucro R$ 228,00, R$ 25,33/h e custo R$ 0,60/km, iguais antes e depois de salvar.
+- [x] Jornada de 08:00 às 18:00 com 1 h de pausa, 120 km, R$ 300 líquidos, carro a 12 km/l e R$ 6,00/l: mostra 9 h, energia R$ 60,00, lucro R$ 240,00, R$ 26,67/h e custo R$ 0,50/km, iguais antes e depois de salvar. (Até 29/10/2026 havia também a reserva por km; ela saiu do app.)
 - [x] Abastecimento lançado na jornada aparece no fluxo de caixa e **não** reduz o lucro operacional.
 - [x] Jornada com horário ou hodômetro sobreposto a outra é recusada com mensagem clara.
 - [x] Editar uma jornada recalcula o painel; excluir remove do painel.
@@ -70,16 +70,15 @@ Cadastro, veículo, jornada e painel com dados reais.
 
 ---
 
-## Etapa 3: despesas, reservas e fluxo de caixa ⬜
+## Etapa 3: despesas e fluxo de caixa ⬜
 
 **Escopo**
 - Despesas avulsas (fora de jornada): fixas recorrentes e variáveis.
 - Pagamentos de custos fixos e parcelas entram no fluxo de caixa.
-- Saldo da reserva de manutenção: acumulado por km menos manutenções pagas.
 - Opção por veículo: custo de energia pela estimativa ou pelos abastecimentos.
 
 **Critérios de aceitação**
-- [ ] Troca de óleo de R$ 250 reduz o saldo da reserva e o caixa, não o lucro operacional.
+- [ ] Troca de óleo de R$ 250 lançada avulsa reduz o lucro e o caixa do dia em que foi paga.
 - [ ] Custo fixo marcado como pago aparece uma vez no caixa do mês.
 - [ ] Nenhum valor aparece duas vezes no resultado operacional (teste automatizado cobrindo todas as categorias).
 

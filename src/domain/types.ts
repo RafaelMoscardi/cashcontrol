@@ -36,12 +36,6 @@ export interface EnergyConfig {
   electricSharePct: number | null
 }
 
-export interface PerKmReserves {
-  maintenancePerKm: number
-  tiresPerKm: number
-  depreciationPerKm: number
-}
-
 export interface VehicleFixedCosts {
   ownership: Ownership
   rentAmount: number
@@ -49,14 +43,14 @@ export interface VehicleFixedCosts {
   insuranceMonthly: number
   taxesYearly: number
   otherFixedMonthly: number
-  /** Só fluxo de caixa: nunca entra no resultado operacional */
+  /** Parcela do financiamento: entra nos custos fixos, como o aluguel */
   financingMonthly: number
   fixedCostsStart: ISODate
   /** Último dia em que os custos fixos contam (dia do arquivamento) */
   fixedCostsEnd: ISODate | null
 }
 
-export interface Vehicle extends EnergyConfig, PerKmReserves, VehicleFixedCosts {
+export interface Vehicle extends EnergyConfig, VehicleFixedCosts {
   id: string
   name: string
   kind: VehicleKind
@@ -100,8 +94,8 @@ export interface CostParams extends EnergyConfig {
   vehicleName: string
 }
 
-/** "Foto" dos custos por km gravada em cada jornada. */
-export interface CostSnapshot extends PerKmReserves {
+/** "Foto" do custo por km gravada em cada jornada. */
+export interface CostSnapshot {
   energyCostPerKm: number
   params: CostParams | null
 }

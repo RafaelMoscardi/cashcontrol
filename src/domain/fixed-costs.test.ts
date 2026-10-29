@@ -49,9 +49,11 @@ describe('custos fixos', () => {
     expect(fixedCostsForPeriod([owned], { from: '2026-01-01', to: '2026-12-31' }, '2027-01-05').total).toBe(219_000)
   })
 
-  it('parcela do financiamento nunca entra no resultado operacional', () => {
+  it('parcela do financiamento entra nos custos fixos, como o aluguel', () => {
     const financed = vehicle({ ownership: 'financed', financingMonthly: 1500 })
-    expect(fixedCostsForPeriod([financed], OCTOBER, AFTER_OCTOBER).total).toBe(0)
+    const r = fixedCostsForPeriod([financed], OCTOBER, AFTER_OCTOBER)
+    expect(r.byKind.financing).toBe(150_000)
+    expect(r.total).toBe(150_000)
   })
 
   it('conta só a partir do início dos custos e até o arquivamento', () => {
@@ -64,7 +66,7 @@ describe('custos fixos', () => {
     const car = vehicle({ id: 'car', ownership: 'rented', rentAmount: 700, rentPeriod: 'week', insuranceMonthly: 99.9 })
     const moto = vehicle({ id: 'moto', insuranceMonthly: 45.5, taxesYearly: 300, otherFixedMonthly: 39.9 })
     const r = fixedCostsForPeriod([car, moto], { from: '2026-10-01', to: '2026-10-17' }, AFTER_OCTOBER)
-    const byKind = r.byKind.rent + r.byKind.insurance + r.byKind.taxes + r.byKind.other
+    const byKind = r.byKind.rent + r.byKind.financing + r.byKind.insurance + r.byKind.taxes + r.byKind.other
     expect(byKind).toBe(r.total)
     expect(r.byVehicle.car! + r.byVehicle.moto!).toBe(r.total)
   })
@@ -75,7 +77,14 @@ describe('custos fixos', () => {
   })
 
   it('custo mensal equivalente para exibir no cadastro', () => {
-    expect(monthlyFixedCost({ rentAmount: 650, rentPeriod: 'week', insuranceMonthly: 0, taxesYearly: 0, otherFixedMonthly: 0 })).toBeCloseTo(2824.4, 1)
-    expect(monthlyFixedCost({ rentAmount: 0, rentPeriod: 'week', insuranceMonthly: 120, taxesYearly: 1800, otherFixedMonthly: 30 })).toBe(300)
+    expect(
+      monthlyFixedCost({ rentAmount: 650, rentPeriod: 'week', financingMonthly: 0, insuranceMonthly: 0, taxesYearly: 0, otherFixedMonthly: 0 }),
+    ).toBeCloseTo(2824.4, 1)
+    expect(
+      monthlyFixedCost({ rentAmount: 0, rentPeriod: 'week', financingMonthly: 0, insuranceMonthly: 120, taxesYearly: 1800, otherFixedMonthly: 30 }),
+    ).toBe(300)
+    expect(
+      monthlyFixedCost({ rentAmount: 0, rentPeriod: 'week', financingMonthly: 1500, insuranceMonthly: 120, taxesYearly: 0, otherFixedMonthly: 0 }),
+    ).toBe(1620)
   })
 })

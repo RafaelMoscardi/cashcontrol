@@ -7,9 +7,9 @@ import { PageHeader } from '@/components/app/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
-import { energyCostPerKm, fuelUnit, reservesPerKm, usesFuel } from '@/domain/energy'
+import { energyCostPerKm, fuelUnit, usesFuel } from '@/domain/energy'
 import { monthlyFixedCost } from '@/domain/fixed-costs'
-import type { Vehicle } from '@/domain/types'
+import type { Powertrain, Vehicle } from '@/domain/types'
 import { errorMessage } from '@/lib/errors'
 import { formatNumber, formatReais } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -25,9 +25,15 @@ function energyLabel(v: Vehicle): string {
   return v.powertrain === 'plugin_hybrid' ? `${fuel}\u00a0+ ${formatNumber(v.electricKmPerKwh ?? 0, 1)}\u00a0km/kWh` : fuel
 }
 
+const ENERGY_COST_LABEL: Record<Powertrain, string> = {
+  combustion: 'Combustível',
+  hybrid: 'Combustível',
+  plugin_hybrid: 'Combustível e energia',
+  electric: 'Energia',
+}
+
 function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   const Icon = vehicle.kind === 'motorcycle' ? Bike : Car
-  const variable = energyCostPerKm(vehicle) + reservesPerKm(vehicle)
   const monthly = monthlyFixedCost(vehicle)
   return (
     <Link
@@ -61,8 +67,8 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
         </p>
         <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
           <span>
-            <span className="text-muted-foreground">Custo variável </span>
-            <span className="font-medium tabular-nums">{formatReais(variable, 2)}/km</span>
+            <span className="text-muted-foreground">{ENERGY_COST_LABEL[vehicle.powertrain]} </span>
+            <span className="font-medium tabular-nums">{formatReais(energyCostPerKm(vehicle), 2)}/km</span>
           </span>
           <span>
             <span className="text-muted-foreground">Fixos </span>
@@ -85,7 +91,7 @@ export function VehiclesPage() {
     <>
       <PageHeader
         title="Veículos"
-        description="Consumo, reservas e custos fixos usados no cálculo do lucro."
+        description="Consumo e custos fixos usados no cálculo do lucro."
         actions={
           <Button asChild>
             <Link to="/veiculos/novo">

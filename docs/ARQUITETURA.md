@@ -103,9 +103,9 @@ auth.users ─1:1─ profiles
 | Tabela | Conteúdo | Regras importantes |
 | --- | --- | --- |
 | `profiles` | nome, data de conclusão do onboarding | criada por gatilho no cadastro |
-| `vehicles` | tipo (carro, moto), motorização (combustão, híbrido, híbrido plug-in, elétrico), combustível, consumo, preço, km/kWh, R$/kWh, reservas por km (manutenção, pneus, depreciação), custos fixos (aluguel semanal ou mensal, seguro, IPVA e licenciamento, outros, parcela do financiamento) | `CHECK` exige a configuração de energia certa para cada motorização; moto só combustão ou elétrica |
+| `vehicles` | tipo (carro, moto), motorização (combustão, híbrido, híbrido plug-in, elétrico), combustível, consumo, preço, km/kWh, R$/kWh, custos fixos (aluguel semanal ou mensal, seguro, IPVA e licenciamento, outros, parcela do financiamento) | `CHECK` exige a configuração de energia certa para cada motorização; moto só combustão ou elétrica |
 | `platforms` | nome, tipo, cor | nome único por usuário; arquivar em vez de apagar |
-| `shifts` | data, início, fim, pausa, hodômetro inicial e final, **foto dos custos do veículo** (R$/km de energia e de cada reserva + parâmetros usados) | fim > início; até 24 h; pausa menor que a duração; hodômetro final ≥ inicial; **sem sobreposição de horário por usuário e de hodômetro por veículo** (restrições `EXCLUDE`) |
+| `shifts` | data, início, fim, pausa, hodômetro inicial e final, **foto dos custos do veículo** (R$/km de energia + parâmetros usados) | fim > início; até 24 h; pausa menor que a duração; hodômetro final ≥ inicial; **sem sobreposição de horário por usuário e de hodômetro por veículo** (restrições `EXCLUDE`) |
 | `shift_earnings` | por plataforma: valor recebido (líquido da taxa da plataforma), gorjetas, bônus, corridas | uma linha por plataforma por jornada |
 | `expenses` | categoria, valor, descrição, data | na jornada ou avulsa (avulsa entra na etapa 3); data e veículo sincronizados com a jornada por gatilho |
 
@@ -128,12 +128,12 @@ A jornada é gravada pela função `save_shift(p_shift, p_earnings, p_expenses)`
 | Ganho da plataforma | valor **líquido** que a plataforma pagou | entra |
 | Taxa da plataforma | **não é lançada** (já está descontada do líquido) | — |
 | Combustível ou recarga | **estimativa** = km × custo por km | abastecimentos e recargas **pagos** |
-| Manutenção, pneus, depreciação | **reserva por km** | manutenções **pagas** (usam a reserva) |
-| Pedágio, estacionamento, alimentação, lavagem, celular, taxas, multas | valor lançado | valor lançado |
-| Aluguel, seguro, IPVA, outros fixos | **rateio diário** pelos dias do período | pagamentos entram na etapa 3 |
-| Parcela do financiamento | fora (a depreciação já representa o desgaste) | pagamentos entram na etapa 3 |
+| Manutenção, pedágio, estacionamento, alimentação, lavagem, celular, taxas, multas | valor lançado | valor lançado |
+| Aluguel, parcela do financiamento, seguro, IPVA, outros fixos | **rateio diário** pelos dias do período | pagamentos entram na etapa 3 |
 
-Assim, um abastecimento lançado na jornada nunca soma com a estimativa de combustível, e uma troca de óleo nunca soma com a reserva de manutenção.
+Assim, um abastecimento lançado na jornada nunca soma com a estimativa de combustível.
+
+As reservas por km (manutenção, pneus e depreciação) saíram do app em 29/10/2026: o usuário quer ver quanto fez no dia. A manutenção paga passou a ser despesa do dia, e a parcela do financiamento entrou nos custos fixos. As colunas antigas continuam no banco, sempre zeradas.
 
 ### 5.3 Jornada
 
@@ -142,10 +142,9 @@ km                 = hodômetro final − hodômetro inicial
 horas trabalhadas  = (fim − início) − pausa
 receita            = Σ (líquido + gorjetas + bônus) das plataformas
 energia estimada   = km × custo de energia por km
-reservas           = km × (manutenção + pneus + depreciação por km)
-despesas operac.   = Σ despesas da jornada exceto combustível e manutenção
-lucro da jornada   = receita − energia − reservas − despesas operacionais
-custo por km       = (energia + reservas + despesas operacionais) ÷ km
+despesas operac.   = Σ despesas da jornada exceto combustível
+lucro da jornada   = receita − energia − despesas operacionais
+custo por km       = (energia + despesas operacionais) ÷ km
 ganho por hora     = lucro da jornada ÷ horas trabalhadas
 ```
 
@@ -155,8 +154,7 @@ ganho por hora     = lucro da jornada ÷ horas trabalhadas
 custos fixos do período = Σ por dia (mensal ÷ dias do mês, semanal ÷ 7, anual ÷ dias do ano)
                           contando só dias entre o início dos custos do veículo e hoje
 resultado operacional   = Σ lucro das jornadas − custos fixos do período
-fluxo de caixa          = receita − todas as despesas pagas (inclusive combustível e manutenção)
-reserva a separar       = Σ reservas por km do período
+fluxo de caixa          = receita − todas as despesas pagas (inclusive combustível)
 ```
 
 Um mês completo soma exatamente o valor mensal; "este mês" conta só os dias até hoje.

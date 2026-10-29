@@ -23,9 +23,6 @@ export function toShift(row: ShiftWithItemsRow): Shift {
     odometerStart: Number(row.odometer_start),
     odometerEnd: Number(row.odometer_end),
     energyCostPerKm: Number(row.energy_cost_per_km),
-    maintenancePerKm: Number(row.maintenance_per_km),
-    tiresPerKm: Number(row.tires_per_km),
-    depreciationPerKm: Number(row.depreciation_per_km),
     params: toCostParams(row.cost_snapshot),
     notes: row.notes,
     earnings: row.earnings.map((e) => ({

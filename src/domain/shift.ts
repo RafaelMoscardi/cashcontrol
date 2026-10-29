@@ -25,11 +25,7 @@ export interface ShiftResult {
   trips: number | null
   /** Estimativa: km × custo de energia por km */
   energyCost: Cents
-  maintenanceReserve: Cents
-  tiresReserve: Cents
-  depreciationReserve: Cents
-  reserves: Cents
-  /** Despesas que entram no resultado (exclui combustível e manutenção) */
+  /** Despesas que entram no resultado (todas, menos o combustível) */
   operationalExpenses: Cents
   /** Fluxo de caixa: abastecimentos e recargas pagos */
   paidEnergy: Cents
@@ -38,7 +34,7 @@ export interface ShiftResult {
   /** Fluxo de caixa: todas as despesas pagas */
   paidExpenses: Cents
   expensesByCategory: Partial<Record<ExpenseCategory, Cents>>
-  /** energia + reservas + despesas operacionais */
+  /** energia + despesas operacionais */
   variableCosts: Cents
   /** Lucro da jornada (antes dos custos fixos) */
   profit: Cents
@@ -68,10 +64,6 @@ export function computeShift(f: ShiftFacts): ShiftResult {
   const trips = f.earnings.some((e) => e.trips !== null) ? f.earnings.reduce((n, e) => n + (e.trips ?? 0), 0) : null
 
   const energyCost = perKmToCents(km, f.energyCostPerKm)
-  const maintenanceReserve = perKmToCents(km, f.maintenancePerKm)
-  const tiresReserve = perKmToCents(km, f.tiresPerKm)
-  const depreciationReserve = perKmToCents(km, f.depreciationPerKm)
-  const reserves = maintenanceReserve + tiresReserve + depreciationReserve
 
   const expensesByCategory: Partial<Record<ExpenseCategory, Cents>> = {}
   let operationalExpenses = 0
@@ -83,7 +75,7 @@ export function computeShift(f: ShiftFacts): ShiftResult {
     if (countsInOperationalResult(expense.category)) operationalExpenses += cents
   }
 
-  const variableCosts = energyCost + reserves + operationalExpenses
+  const variableCosts = energyCost + operationalExpenses
   const profit = revenue - variableCosts
   const hours = minutes / 60
 
@@ -96,10 +88,6 @@ export function computeShift(f: ShiftFacts): ShiftResult {
     revenue,
     trips,
     energyCost,
-    maintenanceReserve,
-    tiresReserve,
-    depreciationReserve,
-    reserves,
     operationalExpenses,
     paidEnergy: expensesByCategory.fuel ?? 0,
     paidMaintenance: expensesByCategory.maintenance ?? 0,

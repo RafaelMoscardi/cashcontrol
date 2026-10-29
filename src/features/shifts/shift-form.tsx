@@ -37,13 +37,7 @@ interface ShiftFormProps {
 }
 
 function snapshotOf(shift: Shift): CostSnapshot {
-  return {
-    energyCostPerKm: shift.energyCostPerKm,
-    maintenancePerKm: shift.maintenancePerKm,
-    tiresPerKm: shift.tiresPerKm,
-    depreciationPerKm: shift.depreciationPerKm,
-    params: shift.params,
-  }
+  return { energyCostPerKm: shift.energyCostPerKm, params: shift.params }
 }
 
 function safeSnapshot(vehicle: Vehicle | undefined): CostSnapshot | null {
@@ -88,8 +82,7 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
 
   const usedPlatforms = new Set(values.earnings.map((e) => e.platformId))
   const nextPlatform = platforms.find((p) => !p.archivedAt && !usedPlatforms.has(p.id))
-  const snapshotChanged =
-    keepsOriginal && current && snapshot && Math.abs(current.energyCostPerKm + current.maintenancePerKm + current.tiresPerKm + current.depreciationPerKm - (snapshot.energyCostPerKm + snapshot.maintenancePerKm + snapshot.tiresPerKm + snapshot.depreciationPerKm)) > 0.00001
+  const snapshotChanged = keepsOriginal && current && snapshot && Math.abs(current.energyCostPerKm - snapshot.energyCostPerKm) > 0.00001
 
   const submit = handleSubmit(async (valid) => {
     if (!snapshot) return

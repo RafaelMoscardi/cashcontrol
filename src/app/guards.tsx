@@ -1,4 +1,4 @@
-import { lazy, type RefObject, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { LoadingScreen } from '@/components/app/loading-screen'
 import { Button } from '@/components/ui/button'
@@ -35,10 +35,26 @@ export function RequireAuth() {
 /** Perfil carregado antes das telas logadas. Sem perfil no banco, não fica girando: confere a conta e resolve. */
 export function RequireProfile() {
   const profile = useProfile()
+  const { refetch } = profile
   // Uma tentativa de recriar o perfil por vez: se não pegar, a tela explica em vez de repetir sem fim
   const healTried = useRef(false)
+  const heal = useCallback(async () => {
+    if (healTried.current) return false
+    healTried.current = true
+    const healed = await ensureProfile().then(
+      () => true,
+      () => false,
+    )
+    if (healed) void refetch()
+    return healed
+  }, [refetch])
+  const retry = useCallback(() => {
+    healTried.current = false
+    void refetch()
+  }, [refetch])
+
   if (profile.isPending) return <LoadingScreen />
-  if (isNotFound(profile.error)) return <MissingProfile healTried={healTried} refetch={profile.refetch} />
+  if (isNotFound(profile.error)) return <MissingProfile heal={heal} retry={retry} />
   return <Outlet />
 }
 
@@ -46,7 +62,7 @@ export function RequireProfile() {
  * Conta sem perfil. Conta apagada: sai dela e a tela de entrar explica. Conta que existe (perfil apagado
  * à mão no painel): recria o perfil e ela recomeça pelo primeiro acesso, como nova.
  */
-function MissingProfile({ healTried, refetch }: { healTried: RefObject<boolean>; refetch: () => Promise<unknown> }) {
+function MissingProfile({ heal, retry }: { heal: () => Promise<boolean>; retry: () => void }) {
   const { signOut } = useAuth()
   const [checking, setChecking] = useState(true)
 
@@ -59,24 +75,13 @@ function MissingProfile({ healTried, refetch }: { healTried: RefObject<boolean>;
         await supabase.auth.signOut({ scope: 'local' })
         return
       }
-      if (!healTried.current) {
-        healTried.current = true
-        if (await ensureProfile().then(() => true, () => false)) {
-          void refetch()
-          return
-        }
-      }
+      if (await heal()) return
       if (active) setChecking(false)
     })()
     return () => {
       active = false
     }
-  }, [healTried, refetch])
-
-  const retry = () => {
-    healTried.current = false
-    void refetch()
-  }
+  }, [heal])
 
   if (checking) return <LoadingScreen />
   return (

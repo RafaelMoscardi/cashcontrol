@@ -182,11 +182,11 @@ Quando o app crescer, troque para um domínio seu e o **Brevo** (300 e-mails por
 Com `npm run dev:local` (ou já publicado):
 
 1. **Cadastro e login.** Crie uma conta → cai no primeiro acesso. Envie o formulário vazio: as mensagens aparecem em português.
-2. **Primeiro acesso.** Escolha Uber, 99 e iFood → Continuar → cadastre o veículo: 12 km/l, R$ 6,00/l, manutenção R$ 0,10/km, alugado por R$ 2.400 por mês. O formulário mostra R$ 0,50/km de energia e R$ 2.400/mês de fixos.
+2. **Primeiro acesso.** Escolha Uber, 99 e iFood → Continuar → cadastre o veículo: 12 km/l, R$ 6,00/l, alugado por R$ 2.400 por mês. O formulário mostra R$ 0,50/km de energia e R$ 2.400/mês de fixos.
 3. **Painel vazio.** "Mês" mostra o aluguel proporcional aos dias já decorridos (25 de outubro → −R$ 1.935,48).
-4. **Jornada.** Registrar: 08:00–18:00, pausa de 60 min, km 45.000 → 45.120, Uber R$ 300,00, despesa "Combustível / recarga" de R$ 100,00. A prévia mostra 9 h, combustível R$ 60,00 (10 l), reservas R$ 12,00, lucro **R$ 228,00**, R$ 25,33/h, custo R$ 0,60/km e caixa +R$ 200,00. Salve: o histórico mostra os mesmos valores.
+4. **Jornada.** Registrar: 08:00–18:00, pausa de 60 min, km 45.000 → 45.120, Uber R$ 300,00, despesa "Combustível / recarga" de R$ 100,00. A prévia mostra 9 h, combustível R$ 60,00 (10 l), lucro **R$ 240,00**, R$ 26,67/h, custo R$ 0,50/km e caixa +R$ 200,00. Salve: o histórico mostra os mesmos valores.
 5. **Sobreposição.** Tente outra jornada das 17:00 às 20:00 no mesmo dia: o app recusa ("Já existe uma jornada nesse horário"). O km inicial já vem preenchido com 45.120.
-6. **Foto dos custos.** Mude o preço do combustível do veículo para R$ 6,49. A jornada antiga continua com lucro de R$ 228,00.
-7. **Painel.** "Hoje": lucro real = R$ 228,00 − 1 dia de aluguel. O fluxo de caixa mostra o abastecimento de R$ 100; o resultado operacional, não.
+6. **Foto dos custos.** Mude o preço do combustível do veículo para R$ 6,49. A jornada antiga continua com lucro de R$ 240,00.
+7. **Painel.** "Hoje": lucro real = R$ 240,00 − 1 dia de aluguel. O fluxo de caixa mostra o abastecimento de R$ 100; o resultado operacional, não.
 8. **Recuperar senha.** Saia → "Esqueci minha senha" → abra o link na caixa de e-mails local → defina a nova senha → entre com ela. Abrir o mesmo link de novo mostra "Link inválido".
 9. **Celular.** No tamanho de celular não há rolagem horizontal; a barra inferior respeita a área do gesto do iPhone; no desktop aparece a barra lateral.

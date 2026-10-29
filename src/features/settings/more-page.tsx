@@ -194,7 +194,7 @@ export function MorePage() {
       <div className="flex flex-col gap-4 lg:max-w-2xl">
         <ProfileCard />
         <SectionCard>
-          <NavRow to="/veiculos" icon={Car} label="Veículos" description="Consumo, reservas por km e custos fixos" />
+          <NavRow to="/veiculos" icon={Car} label="Veículos" description="Consumo e custos fixos" />
           <div className="mx-1 h-px bg-white/[0.06]" />
           <NavRow to="/plataformas" icon={Store} label="Plataformas" description="Uber, 99, iFood e outras" />
         </SectionCard>
@@ -206,14 +206,16 @@ export function MorePage() {
               <strong className="text-foreground">Ganhos:</strong> o valor líquido que a plataforma pagou. A taxa dela nunca é descontada de novo.
             </li>
             <li>
-              <strong className="text-foreground">Combustível e desgaste:</strong> estimados pelos km rodados. Abastecimentos e manutenções pagos aparecem no fluxo de caixa, sem
-              contar duas vezes.
+              <strong className="text-foreground">Combustível:</strong> estimado pelos km rodados. O abastecimento pago aparece no fluxo de caixa, sem contar duas vezes.
             </li>
             <li>
-              <strong className="text-foreground">Custos fixos:</strong> aluguel, seguro e IPVA divididos pelos dias do período.
+              <strong className="text-foreground">Despesas:</strong> pedágio, manutenção, alimentação e as outras saem do lucro do dia em que você lança.
             </li>
             <li>
-              <strong className="text-foreground">Lucro real</strong> = ganhos − combustível − reservas − despesas − custos fixos.
+              <strong className="text-foreground">Custos fixos:</strong> aluguel, parcela, seguro e IPVA divididos pelos dias do período.
+            </li>
+            <li>
+              <strong className="text-foreground">Lucro real</strong> = ganhos − combustível − despesas − custos fixos.
             </li>
           </ul>
         </SectionCard>

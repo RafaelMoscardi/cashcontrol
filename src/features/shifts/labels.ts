@@ -31,5 +31,4 @@ export const EXPENSE_ICON: Record<ExpenseCategory, ComponentType<{ className?: s
 /** Explica, no formulário, por que a despesa não reduz o lucro. */
 export const EXPENSE_NOTE: Partial<Record<ExpenseCategory, string>> = {
   fuel: 'Entra no caixa. O lucro já desconta o combustível estimado pelos km.',
-  maintenance: 'Entra no caixa e sai da reserva de manutenção. O lucro já desconta a reserva por km.',
 }

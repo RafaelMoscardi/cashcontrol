@@ -13,9 +13,6 @@ function shift(workDate: string, overrides: Partial<PeriodShift> = {}): PeriodSh
     odometerStart: 0,
     odometerEnd: 120,
     energyCostPerKm: 0.5,
-    maintenancePerKm: 0.1,
-    tiresPerKm: 0,
-    depreciationPerKm: 0,
     earnings: [{ platformId: 'uber', amount: 300, tips: 0, bonus: 0, trips: 18 }],
     expenses: [],
     ...overrides,
@@ -67,14 +64,13 @@ describe('resumo do período', () => {
   it('separa resultado operacional do fluxo de caixa', () => {
     // receita: 300 + 185 + 50 = 535
     expect(summary.revenue).toBe(53_500)
-    // energia 200 km × 0,50 = 100; reserva 200 × 0,10 = 20; pedágio 15
+    // energia 200 km × 0,50 = 100; pedágio 15
     expect(summary.energyCost).toBe(10_000)
-    expect(summary.reserves).toBe(2_000)
     expect(summary.operationalExpenses).toBe(1_500)
-    expect(summary.profitBeforeFixed).toBe(53_500 - 10_000 - 2_000 - 1_500)
+    expect(summary.profitBeforeFixed).toBe(53_500 - 10_000 - 1_500)
     // aluguel semanal inteiro
     expect(summary.fixedCosts.total).toBe(70_000)
-    expect(summary.operationalResult).toBe(40_000 - 70_000)
+    expect(summary.operationalResult).toBe(42_000 - 70_000)
 
     // caixa: entrou a receita, saíram abastecimento e pedágio pagos
     expect(summary.cash).toEqual({
@@ -127,9 +123,9 @@ describe('resumo do período', () => {
 
   it('indicadores por hora e por km', () => {
     expect(summary.revenuePerHour).toBeCloseTo(535 / 18, 6)
-    expect(summary.resultPerHour).toBeCloseTo(-300 / 18, 6)
+    expect(summary.resultPerHour).toBeCloseTo(-280 / 18, 6)
     expect(summary.revenuePerKm).toBeCloseTo(2.675, 6)
-    expect(summary.totalCostPerKm).toBeCloseTo((100 + 20 + 15 + 700) / 200, 6)
+    expect(summary.totalCostPerKm).toBeCloseTo((100 + 15 + 700) / 200, 6)
   })
 
   it('no mês em andamento a série diária para em hoje', () => {
@@ -151,7 +147,8 @@ describe('resumo do período', () => {
       range: WEEK,
       today: '2026-10-25',
     })
-    expect(r.profitBeforeFixed).toBe(22_800 - 4_000)
+    // jornada: 300 − 60 de energia; manutenção e lavagem avulsas saem do lucro
+    expect(r.profitBeforeFixed).toBe(24_000 - 25_000 - 4_000)
     expect(r.cash.paidMaintenance).toBe(25_000)
     expect(r.cash.outflow).toBe(29_000)
     expect(r.daily.reduce((s, d) => s + d.profit, 0)).toBe(r.profitBeforeFixed)

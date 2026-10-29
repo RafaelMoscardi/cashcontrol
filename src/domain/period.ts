@@ -48,10 +48,6 @@ export interface PeriodSummary {
   tips: Cents
   bonus: Cents
   energyCost: Cents
-  maintenanceReserve: Cents
-  tiresReserve: Cents
-  depreciationReserve: Cents
-  reserves: Cents
   operationalExpenses: Cents
   expensesByCategory: Partial<Record<ExpenseCategory, Cents>>
   /** Lucro antes dos custos fixos: Σ lucro das jornadas − despesas operacionais avulsas */
@@ -105,9 +101,6 @@ export function summarizePeriod({ shifts, standaloneExpenses = [], vehicles, ran
   let tips = 0
   let bonus = 0
   let energyCost = 0
-  let maintenanceReserve = 0
-  let tiresReserve = 0
-  let depreciationReserve = 0
   let operationalExpenses = 0
   let profitBeforeFixed = 0
   let paidEnergy = 0
@@ -126,9 +119,6 @@ export function summarizePeriod({ shifts, standaloneExpenses = [], vehicles, ran
     tips += r.tips
     bonus += r.bonus
     energyCost += r.energyCost
-    maintenanceReserve += r.maintenanceReserve
-    tiresReserve += r.tiresReserve
-    depreciationReserve += r.depreciationReserve
     operationalExpenses += r.operationalExpenses
     profitBeforeFixed += r.profit
     paidEnergy += r.paidEnergy
@@ -173,7 +163,6 @@ export function summarizePeriod({ shifts, standaloneExpenses = [], vehicles, ran
 
   distanceKm = Number(distanceKm.toFixed(1))
   const revenue = platformNet + tips + bonus
-  const reserves = maintenanceReserve + tiresReserve + depreciationReserve
   const fixedCosts = fixedCostsForPeriod(vehicles, range, today)
   const operationalResult = profitBeforeFixed - fixedCosts.total
   const hours = workedMinutes / 60
@@ -189,10 +178,6 @@ export function summarizePeriod({ shifts, standaloneExpenses = [], vehicles, ran
     tips,
     bonus,
     energyCost,
-    maintenanceReserve,
-    tiresReserve,
-    depreciationReserve,
-    reserves,
     operationalExpenses,
     expensesByCategory,
     profitBeforeFixed,
@@ -209,7 +194,7 @@ export function summarizePeriod({ shifts, standaloneExpenses = [], vehicles, ran
     revenuePerHour: safeDivide(revenue / 100, hours),
     resultPerHour: safeDivide(operationalResult / 100, hours),
     revenuePerKm: safeDivide(revenue / 100, distanceKm),
-    totalCostPerKm: safeDivide((energyCost + reserves + operationalExpenses + fixedCosts.total) / 100, distanceKm),
+    totalCostPerKm: safeDivide((energyCost + operationalExpenses + fixedCosts.total) / 100, distanceKm),
     resultPerKm: safeDivide(operationalResult / 100, distanceKm),
     daily: [...daily.values()],
     byPlatform: [...platforms.values()].sort((a, b) => b.revenue - a.revenue),

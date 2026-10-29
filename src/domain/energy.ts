@@ -1,5 +1,5 @@
 import { roundRate } from './money'
-import type { CostSnapshot, EnergyConfig, FuelType, PerKmReserves, Powertrain } from './types'
+import type { CostSnapshot, EnergyConfig, FuelType, Powertrain } from './types'
 
 export const POWERTRAINS_WITH_FUEL: readonly Powertrain[] = ['combustion', 'hybrid', 'plugin_hybrid']
 export const POWERTRAINS_WITH_ELECTRICITY: readonly Powertrain[] = ['electric', 'plugin_hybrid']
@@ -67,16 +67,10 @@ export function estimateConsumption(cfg: EnergyConfig, distanceKm: number): Esti
   }
 }
 
-/** Reservas por km somadas (manutenção + pneus + depreciação). */
-export const reservesPerKm = (r: PerKmReserves) => roundRate(r.maintenancePerKm + r.tiresPerKm + r.depreciationPerKm, 4)
-
 /** Monta a foto de custos de um veículo para gravar na jornada. */
-export function buildCostSnapshot(vehicle: EnergyConfig & PerKmReserves & { name: string }): CostSnapshot {
+export function buildCostSnapshot(vehicle: EnergyConfig & { name: string }): CostSnapshot {
   return {
     energyCostPerKm: energyCostPerKm(vehicle),
-    maintenancePerKm: vehicle.maintenancePerKm,
-    tiresPerKm: vehicle.tiresPerKm,
-    depreciationPerKm: vehicle.depreciationPerKm,
     params: {
       vehicleName: vehicle.name,
       powertrain: vehicle.powertrain,

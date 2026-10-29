@@ -4,15 +4,14 @@ import type { ExpenseCategory } from './types'
  * Onde cada despesa entra. A regra que impede contar duas vezes:
  *  - energy: o resultado operacional já desconta a estimativa (km × custo/km);
  *    o abastecimento pago só aparece no fluxo de caixa.
- *  - maintenance: o resultado operacional já desconta a reserva por km;
- *    a manutenção paga só aparece no fluxo de caixa (e consome a reserva).
- *  - operational: entra nos dois.
+ *  - operational: entra nos dois. Inclui a manutenção: sem reserva por km,
+ *    ela pesa no lucro do dia em que é paga.
  */
-export type ExpenseNature = 'energy' | 'maintenance' | 'operational'
+export type ExpenseNature = 'energy' | 'operational'
 
 export const EXPENSE_NATURE: Record<ExpenseCategory, ExpenseNature> = {
   fuel: 'energy',
-  maintenance: 'maintenance',
+  maintenance: 'operational',
   toll: 'operational',
   parking: 'operational',
   food: 'operational',

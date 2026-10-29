@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildCostSnapshot, energyCostPerKm, estimateConsumption, fuelUnit, reservesPerKm } from './energy'
+import { buildCostSnapshot, energyCostPerKm, estimateConsumption, fuelUnit } from './energy'
 import type { EnergyConfig } from './types'
 
 const NONE = {
@@ -82,16 +82,9 @@ describe('consumo estimado', () => {
 })
 
 describe('foto dos custos', () => {
-  it('guarda as taxas por km e os parâmetros usados', () => {
-    const snapshot = buildCostSnapshot({
-      ...combustion('gasoline', 12, 6),
-      name: 'Onix',
-      maintenancePerKm: 0.1,
-      tiresPerKm: 0.03,
-      depreciationPerKm: 0.08,
-    })
-    expect(snapshot).toMatchObject({ energyCostPerKm: 0.5, maintenancePerKm: 0.1, tiresPerKm: 0.03, depreciationPerKm: 0.08 })
+  it('guarda o custo por km e os parâmetros usados', () => {
+    const snapshot = buildCostSnapshot({ ...combustion('gasoline', 12, 6), name: 'Onix' })
+    expect(snapshot.energyCostPerKm).toBe(0.5)
     expect(snapshot.params).toMatchObject({ vehicleName: 'Onix', fuelPricePerUnit: 6, fuelKmPerUnit: 12 })
-    expect(reservesPerKm(snapshot)).toBe(0.21)
   })
 })

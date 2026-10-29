@@ -7,7 +7,6 @@ import type { Database } from '@/types/database'
 type VehicleInsert = Database['public']['Tables']['vehicles']['Insert']
 
 const money = z.number().int().min(0).max(1_000_000_00, 'Valor muito alto')
-const perKm = z.number().min(0, 'Não pode ser negativo').max(10, 'Mais de R$ 10/km? Confira o valor').nullable()
 const optional = (n: z.ZodNumber) => n.nullable()
 
 export const vehicleFormSchema = z
@@ -21,9 +20,6 @@ export const vehicleFormSchema = z
     electricKmPerKwh: optional(z.number().gt(0, 'Precisa ser maior que zero').max(50, 'Confira o consumo')),
     electricityPricePerKwh: optional(z.number().min(0, 'Não pode ser negativo').max(20, 'Confira o preço')),
     electricSharePct: optional(z.number().min(0, 'Entre 0 e 100').max(100, 'Entre 0 e 100')),
-    maintenancePerKm: perKm,
-    tiresPerKm: perKm,
-    depreciationPerKm: perKm,
     ownership: z.enum(['owned', 'financed', 'rented', 'other']),
     rentCents: money,
     rentPeriod: z.enum(['week', 'month']),
@@ -67,9 +63,6 @@ export function emptyVehicleForm(): VehicleFormValues {
     electricKmPerKwh: null,
     electricityPricePerKwh: null,
     electricSharePct: 60,
-    maintenancePerKm: null,
-    tiresPerKm: null,
-    depreciationPerKm: null,
     ownership: 'owned',
     rentCents: 0,
     rentPeriod: 'week',
@@ -97,9 +90,6 @@ export function vehicleToForm(v: Vehicle): VehicleFormValues {
     electricKmPerKwh: v.electricKmPerKwh,
     electricityPricePerKwh: v.electricityPricePerKwh,
     electricSharePct: v.electricSharePct ?? 60,
-    maintenancePerKm: v.maintenancePerKm || null,
-    tiresPerKm: v.tiresPerKm || null,
-    depreciationPerKm: v.depreciationPerKm || null,
     ownership: v.ownership,
     rentCents: cents(v.rentAmount),
     rentPeriod: v.rentPeriod,
@@ -131,9 +121,10 @@ export function formToVehicleRow(v: VehicleFormValues): Omit<VehicleInsert, 'arc
     electric_km_per_kwh: electric ? v.electricKmPerKwh : null,
     electricity_price_per_kwh: electric ? v.electricityPricePerKwh : null,
     electric_share_pct: v.powertrain === 'plugin_hybrid' ? v.electricSharePct : null,
-    maintenance_per_km: v.maintenancePerKm ?? 0,
-    tires_per_km: v.tiresPerKm ?? 0,
-    depreciation_per_km: v.ownership === 'rented' ? 0 : (v.depreciationPerKm ?? 0),
+    // As reservas por km saíram do app em 29/10/2026: as colunas antigas ficam zeradas
+    maintenance_per_km: 0,
+    tires_per_km: 0,
+    depreciation_per_km: 0,
     ownership: v.ownership,
     rent_amount: v.ownership === 'rented' ? v.rentCents / 100 : 0,
     rent_period: v.rentPeriod,

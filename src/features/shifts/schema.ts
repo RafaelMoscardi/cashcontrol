@@ -131,9 +131,6 @@ export function toShiftFacts(v: ShiftFormValues, snapshot: CostSnapshot | null):
     odometerStart: start,
     odometerEnd: end,
     energyCostPerKm: snapshot.energyCostPerKm,
-    maintenancePerKm: snapshot.maintenancePerKm,
-    tiresPerKm: snapshot.tiresPerKm,
-    depreciationPerKm: snapshot.depreciationPerKm,
     earnings: v.earnings.map((e) => ({
       platformId: e.platformId,
       amount: e.amountCents / 100,
@@ -158,10 +155,8 @@ export function toSavePayload(v: ShiftFormValues, snapshot: CostSnapshot, id?: s
       break_minutes: v.breakMinutes,
       odometer_start: v.odometerStart,
       odometer_end: v.odometerEnd,
+      // Sem as reservas por km (saíram em 29/10/2026): save_shift grava zero nas colunas antigas
       energy_cost_per_km: snapshot.energyCostPerKm,
-      maintenance_per_km: snapshot.maintenancePerKm,
-      tires_per_km: snapshot.tiresPerKm,
-      depreciation_per_km: snapshot.depreciationPerKm,
       cost_snapshot: snapshot.params ?? {},
       notes: v.notes.trim() || null,
     },
