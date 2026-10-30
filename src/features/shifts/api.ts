@@ -63,17 +63,26 @@ async function deleteShift(id: string): Promise<void> {
   unwrap(await supabase.from('shifts').delete().eq('id', id))
 }
 
-async function fetchLastOdometer(vehicleId: string): Promise<number | null> {
+/** Onde a última jornada de um veículo terminou. */
+export interface LastReadings {
+  odometer: number
+  /** Medidor de energia do elétrico; null se a jornada ficou sem a leitura final */
+  energyMeter: number | null
+}
+
+async function fetchLastReadings(vehicleId: string): Promise<LastReadings | null> {
   const row = unwrap(
     await supabase
       .from('shifts')
-      .select('odometer_end')
+      .select('odometer_end, cost_snapshot')
       .eq('vehicle_id', vehicleId)
       .order('ended_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
   )
-  return row ? Number(row.odometer_end) : null
+  if (!row) return null
+  const meter = toCostParams(row.cost_snapshot)?.meterEndKwh
+  return { odometer: Number(row.odometer_end), energyMeter: typeof meter === 'number' && Number.isFinite(meter) ? meter : null }
 }
 
 const invalidateShifts = () => queryClient.invalidateQueries({ queryKey: queryKeys.shifts })
@@ -91,10 +100,10 @@ export function useShift(id: string | undefined) {
   return useQuery({ queryKey: queryKeys.shift(id ?? ''), queryFn: () => getShift(id!), enabled: Boolean(id) })
 }
 
-export function useLastOdometer(vehicleId: string | undefined) {
+export function useLastReadings(vehicleId: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.lastOdometer(vehicleId ?? ''),
-    queryFn: () => fetchLastOdometer(vehicleId!),
+    queryKey: queryKeys.lastReadings(vehicleId ?? ''),
+    queryFn: () => fetchLastReadings(vehicleId!),
     enabled: Boolean(vehicleId),
   })
 }

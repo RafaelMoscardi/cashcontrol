@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CalendarClock, ChevronDown, Gauge, Plus, Receipt, RefreshCw, Trash, Wallet, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type * as React from 'react'
 import { Controller, useFieldArray, useForm, useWatch, type Control, type UseFormRegister } from 'react-hook-form'
 import { DecimalInput, IntegerInput } from '@/components/app/decimal-input'
@@ -8,20 +8,21 @@ import { FormField } from '@/components/app/form-field'
 import { MoneyInput } from '@/components/app/money-input'
 import { SectionCard } from '@/components/app/section-card'
 import { Button } from '@/components/ui/button'
+import { FieldLegend, FieldSet } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
-import { buildCostSnapshot } from '@/domain/energy'
+import { buildCostSnapshot, measuredEnergyCost } from '@/domain/energy'
 import { EXPENSE_CATEGORIES } from '@/domain/expenses'
 import { computeShift } from '@/domain/shift'
 import type { CostSnapshot, Platform, Shift, Vehicle } from '@/domain/types'
-import { formatReais } from '@/lib/format'
+import { formatMoney, formatNumber, formatReais } from '@/lib/format'
 import { reportInvalid } from '@/lib/form-errors'
 import { cn } from '@/lib/utils'
-import { useLastOdometer } from './api'
+import { useLastReadings } from './api'
 import { EXPENSE_ICON, EXPENSE_LABEL, EXPENSE_NOTE } from './labels'
-import { shiftFormSchema, toShiftFacts, withMeterReading, type ShiftFormValues } from './schema'
+import { shiftFormSchema, toShiftFacts, withMeterReadings, type ShiftFormValues } from './schema'
 import { ShiftPreview } from './shift-preview'
 
 const BREAK_PRESETS = [0, 15, 30, 60]
@@ -50,7 +51,7 @@ function safeSnapshot(vehicle: Vehicle | undefined): CostSnapshot | null {
 }
 
 export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubmit, secondaryActions }: ShiftFormProps) {
-  const { control, register, handleSubmit, setValue, getFieldState, formState } = useForm<ShiftFormValues>({
+  const { control, register, handleSubmit, setValue, getValues, formState } = useForm<ShiftFormValues>({
     resolver: zodResolver(shiftFormSchema),
     defaultValues,
     mode: 'onTouched',
@@ -68,20 +69,40 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
     [keepsOriginal, original, vehicle],
   )
   const current = safeSnapshot(vehicle)
-  // Elétrico com medidor: os kWh digitados entram na foto de custos da jornada
-  const effective = useMemo(() => (snapshot ? withMeterReading(snapshot, values.energyKwh ?? null) : null), [snapshot, values.energyKwh])
+  // Elétrico com medidor: as leituras entram na foto de custos da jornada
+  const effective = useMemo(
+    () => (snapshot ? withMeterReadings(snapshot, values.meterStartKwh ?? null, values.meterEndKwh ?? null) : null),
+    [snapshot, values.meterStartKwh, values.meterEndKwh],
+  )
   const result = useMemo(() => {
     const facts = toShiftFacts(values, effective)
     return facts ? computeShift(facts) : null
   }, [values, effective])
   const kwhPrice = snapshot?.params?.powertrain === 'electric' ? snapshot.params.electricityPricePerKwh : undefined
+  const meterShown = kwhPrice !== undefined
+  const meterKwh = effective?.params?.measuredKwh ?? null
+  const meterCost = measuredEnergyCost(effective?.params)
 
-  // Nova jornada: hodômetro inicial = onde a última jornada deste veículo terminou
-  const lastOdometer = useLastOdometer(original ? undefined : values.vehicleId)
+  // Nova jornada: hodômetro e medidor começam onde a última jornada deste veículo terminou. Ao trocar
+  // de veículo, só muda o que o próprio app preencheu (ou o que está vazio): o que a pessoa digitou fica.
+  const last = useLastReadings(original ? undefined : values.vehicleId)
+  const pulled = useRef<{ odometerStart: number | null; meterStartKwh: number | null }>({ odometerStart: null, meterStartKwh: null })
   useEffect(() => {
-    if (original || lastOdometer.data === undefined || lastOdometer.data === null) return
-    if (!getFieldState('odometerStart').isDirty) setValue('odometerStart', lastOdometer.data)
-  }, [original, lastOdometer.data, getFieldState, setValue])
+    if (original || last.data === undefined) return
+    const next = { odometerStart: last.data?.odometer ?? null, meterStartKwh: last.data?.energyMeter ?? null }
+    for (const name of ['odometerStart', 'meterStartKwh'] as const) {
+      const current = getValues(name)
+      if (current == null || current === pulled.current[name]) setValue(name, next[name])
+    }
+    pulled.current = next
+  }, [original, last.data, getValues, setValue])
+
+  // Fora do elétrico não há medidor: leituras que sobraram de outro veículo não valem nem travam o envio
+  useEffect(() => {
+    if (meterShown) return
+    setValue('meterStartKwh', null)
+    setValue('meterEndKwh', null)
+  }, [meterShown, setValue])
 
   const usedPlatforms = new Set(values.earnings.map((e) => e.platformId))
   const nextPlatform = platforms.find((p) => !p.archivedAt && !usedPlatforms.has(p.id))
@@ -89,7 +110,7 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
 
   const submit = handleSubmit(async (valid) => {
     if (!snapshot) return
-    await onSubmit(valid as ShiftFormValues, withMeterReading(snapshot, valid.energyKwh ?? null))
+    await onSubmit(valid as ShiftFormValues, withMeterReadings(snapshot, valid.meterStartKwh ?? null, valid.meterEndKwh ?? null))
   }, reportInvalid)
 
   return (
@@ -181,7 +202,7 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
                   <FormField
                     label="Km inicial"
                     htmlFor="odometerStart"
-                    description={!original && lastOdometer.data != null ? 'Onde a última jornada terminou.' : undefined}
+                    description={!original && last.data != null && field.value === last.data.odometer ? 'Onde a última jornada terminou.' : undefined}
                     error={errors.odometerStart?.message}
                   >
                     <IntegerInput
@@ -214,32 +235,74 @@ export function ShiftForm({ defaultValues, vehicles, platforms, original, onSubm
                 )}
               />
             </div>
-            {kwhPrice !== undefined && (
-              <Controller
-                control={control}
-                name="energyKwh"
-                render={({ field }) => (
-                  <FormField
-                    label="Energia gasta (opcional)"
-                    htmlFor="energyKwh"
-                    description={`Se o carro ou o carregador mostra quanto gastou, digite aqui. O app usa esse valor, ${
-                      kwhPrice === null ? 'com o preço do kWh do cadastro' : `a ${formatReais(kwhPrice)} o kWh do cadastro`
-                    }, no lugar da estimativa pelos km.`}
-                    error={errors.energyKwh?.message}
-                  >
-                    <DecimalInput
-                      id="energyKwh"
-                      value={field.value ?? null}
-                      onValueChange={field.onChange}
-                      onBlur={field.onBlur}
-                      suffix="kWh"
-                      placeholder="0,0"
-                      maxFractionDigits={1}
-                      aria-invalid={!!errors.energyKwh}
-                    />
-                  </FormField>
+            {meterShown && (
+              <FieldSet className="gap-3">
+                <FieldLegend variant="label" className="mb-2.5">
+                  Medidor de energia <span className="font-normal text-muted-foreground">(opcional)</span>
+                </FieldLegend>
+                <div className="grid grid-cols-2 gap-4">
+                  <Controller
+                    control={control}
+                    name="meterStartKwh"
+                    render={({ field }) => (
+                      <FormField
+                        label="kWh inicial"
+                        htmlFor="meterStartKwh"
+                        description={
+                          !original && last.data?.energyMeter != null && field.value === last.data.energyMeter ? 'Onde a última jornada terminou.' : undefined
+                        }
+                        error={errors.meterStartKwh?.message}
+                      >
+                        <DecimalInput
+                          id="meterStartKwh"
+                          value={field.value ?? null}
+                          onValueChange={field.onChange}
+                          onBlur={field.onBlur}
+                          suffix="kWh"
+                          placeholder="1240,5"
+                          maxFractionDigits={2}
+                          aria-invalid={!!errors.meterStartKwh}
+                        />
+                      </FormField>
+                    )}
+                  />
+                  <Controller
+                    control={control}
+                    name="meterEndKwh"
+                    render={({ field }) => (
+                      <FormField label="kWh final" htmlFor="meterEndKwh" error={errors.meterEndKwh?.message}>
+                        <DecimalInput
+                          id="meterEndKwh"
+                          value={field.value ?? null}
+                          onValueChange={field.onChange}
+                          onBlur={field.onBlur}
+                          suffix="kWh"
+                          placeholder="1276,2"
+                          maxFractionDigits={2}
+                          aria-invalid={!!errors.meterEndKwh}
+                        />
+                      </FormField>
+                    )}
+                  />
+                </div>
+                {meterKwh !== null ? (
+                  <p className="text-[0.8125rem] text-muted-foreground">
+                    Gasto: <span className="font-medium text-foreground tabular-nums">{formatNumber(meterKwh, 2)} kWh</span>
+                    {kwhPrice !== null && meterCost !== null && (
+                      <>
+                        {' '}
+                        × {formatReais(kwhPrice)} = <span className="font-medium text-foreground tabular-nums">{formatMoney(meterCost)}</span>
+                      </>
+                    )}
+                  </p>
+                ) : (
+                  values.meterEndKwh == null && (
+                    <p className="text-[0.8125rem] text-muted-foreground">
+                      Leituras do medidor do carro ou do carregador. Sem o kWh final, o app estima a energia pelos km.
+                    </p>
+                  )
                 )}
-              />
+              </FieldSet>
             )}
             {original && (
               <div className="rounded-xl bg-white/[0.03] px-3.5 py-3 text-[0.8125rem] text-muted-foreground">

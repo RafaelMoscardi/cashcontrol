@@ -105,7 +105,7 @@ auth.users ─1:1─ profiles
 | `profiles` | nome, data de conclusão do onboarding | criada por gatilho no cadastro |
 | `vehicles` | tipo (carro, moto), motorização (combustão, híbrido, híbrido plug-in, elétrico), combustível, consumo, preço, km/kWh, R$/kWh, custos fixos (aluguel semanal ou mensal, seguro, IPVA e licenciamento, outros, parcela do financiamento) | `CHECK` exige a configuração de energia certa para cada motorização; moto só combustão ou elétrica |
 | `platforms` | nome, tipo, cor | nome único por usuário; arquivar em vez de apagar |
-| `shifts` | data, início, fim, pausa, hodômetro inicial e final, **foto dos custos do veículo** (R$/km de energia + parâmetros usados) | fim > início; até 24 h; pausa menor que a duração; hodômetro final ≥ inicial; **sem sobreposição de horário por usuário e de hodômetro por veículo** (restrições `EXCLUDE`) |
+| `shifts` | data, início, fim, pausa, hodômetro inicial e final, **foto dos custos do veículo** (R$/km de energia + parâmetros usados; no elétrico, as leituras do medidor) | fim > início; até 24 h; pausa menor que a duração; hodômetro final ≥ inicial; **sem sobreposição de horário por usuário e de hodômetro por veículo** (restrições `EXCLUDE`) |
 | `shift_earnings` | por plataforma: valor recebido (líquido da taxa da plataforma), gorjetas, bônus, corridas | uma linha por plataforma por jornada |
 | `expenses` | categoria, valor, descrição, data | na jornada ou avulsa (avulsa entra na etapa 3); data e veículo sincronizados com a jornada por gatilho |
 
@@ -142,7 +142,8 @@ km                 = hodômetro final − hodômetro inicial
 horas trabalhadas  = (fim − início) − pausa
 receita            = Σ (líquido + gorjetas + bônus) das plataformas
 energia estimada   = km × custo de energia por km
-                     (elétrico com os kWh do medidor: kWh × preço do kWh, guardados na foto de custos)
+                     (elétrico com o medidor: (kWh final − inicial) × preço do kWh; as leituras ficam
+                     na foto de custos, e a jornada seguinte começa no kWh final da anterior)
 despesas operac.   = Σ despesas da jornada exceto combustível
 lucro da jornada   = receita − energia − despesas operacionais
 custo por km       = (energia + despesas operacionais) ÷ km

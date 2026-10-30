@@ -207,7 +207,7 @@ export function MorePage() {
             </li>
             <li>
               <strong className="text-foreground">Combustível:</strong> estimado pelos km rodados. O abastecimento pago aparece no fluxo de caixa, sem contar duas vezes. No
-              elétrico, dá para informar os kWh do medidor na jornada.
+              elétrico, dá para informar o kWh inicial e o final do medidor na jornada.
             </li>
             <li>
               <strong className="text-foreground">Despesas:</strong> pedágio, manutenção, alimentação e as outras saem do lucro do dia em que você lança.

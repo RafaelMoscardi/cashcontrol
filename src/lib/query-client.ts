@@ -25,5 +25,5 @@ export const queryKeys = {
   shifts: ['shifts'] as const,
   shiftsBetween: (from: string, to: string) => ['shifts', 'between', from, to] as const,
   shift: (id: string) => ['shifts', 'detail', id] as const,
-  lastOdometer: (vehicleId: string) => ['shifts', 'last-odometer', vehicleId] as const,
+  lastReadings: (vehicleId: string) => ['shifts', 'last-readings', vehicleId] as const,
 }

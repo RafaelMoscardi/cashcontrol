@@ -92,7 +92,10 @@ export interface Expense {
 /** Parâmetros que deram origem ao custo por km de uma jornada. */
 export interface CostParams extends EnergyConfig {
   vehicleName: string
-  /** Elétrico: kWh lidos no medidor do carro ou do carregador. Com eles, a energia é kWh × preço do kWh */
+  /** Elétrico: leituras do medidor do carro ou do carregador no começo e no fim da jornada */
+  meterStartKwh?: number | null
+  meterEndKwh?: number | null
+  /** Elétrico: kWh gastos na jornada (final − inicial do medidor). Com eles, a energia é kWh × preço do kWh */
   measuredKwh?: number | null
 }
 

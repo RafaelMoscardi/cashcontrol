@@ -6,6 +6,7 @@ import type { CostSnapshot, ExpenseCategory, ISODate, Shift } from '@/domain/typ
 
 const TIME = /^\d{2}:\d{2}$/
 const moneyCents = z.number().int().min(0).max(10_000_000, 'Valor muito alto')
+const meterKwh = z.number().min(0).max(9_999_999, 'Confira a leitura do medidor').nullable()
 
 export const shiftFormSchema = z
   .object({
@@ -16,8 +17,9 @@ export const shiftFormSchema = z
     breakMinutes: z.number().int().min(0, 'Não pode ser negativa').max(1439, 'Pausa longa demais'),
     odometerStart: z.number().min(0).max(9_999_999, 'Confira o hodômetro').nullable(),
     odometerEnd: z.number().min(0).max(9_999_999, 'Confira o hodômetro').nullable(),
-    /** Elétrico: kWh do medidor (opcional) */
-    energyKwh: z.number().gt(0, 'Precisa ser maior que zero').max(300, 'Mais de 300 kWh? Confira').nullable(),
+    /** Elétrico: leituras do medidor (opcionais) */
+    meterStartKwh: meterKwh,
+    meterEndKwh: meterKwh,
     earnings: z
       .array(
         z.object({
@@ -46,6 +48,17 @@ export const shiftFormSchema = z
         ctx.addIssue({ code: 'custom', path: ['odometerEnd'], message: 'O km final não pode ser menor que o inicial' })
       } else if (v.odometerEnd - v.odometerStart > 2000) {
         ctx.addIssue({ code: 'custom', path: ['odometerEnd'], message: 'Mais de 2.000 km numa jornada? Confira' })
+      }
+    }
+
+    // Sem o kWh final, vale a estimativa pelos km
+    if (v.meterEndKwh !== null) {
+      if (v.meterStartKwh === null) {
+        ctx.addIssue({ code: 'custom', path: ['meterStartKwh'], message: 'Informe o kWh inicial' })
+      } else if (v.meterEndKwh <= v.meterStartKwh) {
+        ctx.addIssue({ code: 'custom', path: ['meterEndKwh'], message: 'O final precisa ser maior que o inicial' })
+      } else if (v.meterEndKwh - v.meterStartKwh > 300) {
+        ctx.addIssue({ code: 'custom', path: ['meterEndKwh'], message: 'Mais de 300 kWh numa jornada? Confira' })
       }
     }
 
@@ -91,7 +104,8 @@ export function newShiftForm(input: { workDate: ISODate; vehicleId: string; plat
     breakMinutes: 0,
     odometerStart: input.odometerStart,
     odometerEnd: null,
-    energyKwh: null,
+    meterStartKwh: null,
+    meterEndKwh: null,
     earnings: [{ platformId: input.platformId, amountCents: 0, tipsCents: 0, bonusCents: 0, trips: null }],
     expenses: [],
     notes: '',
@@ -109,7 +123,8 @@ export function shiftToForm(shift: Shift): ShiftFormValues {
     breakMinutes: shift.breakMinutes,
     odometerStart: shift.odometerStart,
     odometerEnd: shift.odometerEnd,
-    energyKwh: shift.params?.measuredKwh ?? null,
+    meterStartKwh: shift.params?.meterStartKwh ?? null,
+    meterEndKwh: shift.params?.meterEndKwh ?? null,
     earnings: shift.earnings.map((e) => ({
       platformId: e.platformId,
       amountCents: toCents(e.amount),
@@ -122,10 +137,17 @@ export function shiftToForm(shift: Shift): ShiftFormValues {
   }
 }
 
-/** Nos elétricos, os kWh do medidor vão junto na foto de custos da jornada (em branco, vale a estimativa). */
-export function withMeterReading(snapshot: CostSnapshot, energyKwh: number | null): CostSnapshot {
-  if (snapshot.params?.powertrain !== 'electric') return snapshot
-  return { ...snapshot, params: { ...snapshot.params, measuredKwh: energyKwh } }
+/**
+ * Nos elétricos, as leituras do medidor vão junto na foto de custos da jornada, com o gasto (final − inicial).
+ * Sem o kWh final, vale a estimativa pelos km.
+ */
+export function withMeterReadings(snapshot: CostSnapshot, startKwh: number | null, endKwh: number | null): CostSnapshot {
+  const params = snapshot.params
+  if (params?.powertrain !== 'electric') return snapshot
+  // Jornada salva quando o campo era só o total: sem leituras novas, o total fica como está
+  if (startKwh === null && endKwh === null && params.meterStartKwh == null && params.meterEndKwh == null) return snapshot
+  const measuredKwh = startKwh !== null && endKwh !== null && endKwh > startKwh ? Math.round((endKwh - startKwh) * 100) / 100 : null
+  return { ...snapshot, params: { ...params, meterStartKwh: startKwh, meterEndKwh: endKwh, measuredKwh } }
 }
 
 /** Fatos para a prévia ao vivo; null enquanto faltam horário ou hodômetro válidos. */
